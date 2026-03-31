@@ -1,0 +1,11 @@
+source_cloud: source
+target_cloud: target_oidc
+
+servers:
+  - ahmedtst
+
+flavor_map_file: flavor-map.yml
+create_target_server: true
+target_server_name_prefix: 
+attach_data_volumes: true
+parallel_streams: 2

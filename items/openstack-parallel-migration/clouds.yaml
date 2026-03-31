@@ -1,0 +1,42 @@
+clouds:
+  source:
+    auth:
+      auth_url: https://keystone.cloudferro.com:5000/v3
+      username: admin-eumetsat-sandbox
+      password: 
+      project_name: cloud_00585_1
+      user_domain_name: cloud_00585
+      project_domain_name: cloud_00585
+    region_name: WAW3-1
+    interface: public
+    identity_api_version: 3
+
+  # Used by openstacksdk for actual operations on target
+  target:
+    auth_type: v3token
+    auth:
+      auth_url: https://keystone.cloud.central.data.destination-earth.eu:443/v3
+      project_name: bds-val
+      project_domain_name: EUMETSAT
+      token: ""   # script will set OS_TOKEN at runtime
+    region_name: DEDL-CENTRAL
+    interface: public
+    identity_api_version: 3
+
+  # Used ONLY to let the CLI obtain a token (script runs: openstack --os-cloud target_oidc token issue ...)
+  target_oidc:
+    auth_type: v3oidcpassword
+    auth:
+      auth_url: https://keystone.cloud.central.data.destination-earth.eu:443/v3
+      username: ahmed.naga@eumetsat.int
+      password: 
+      project_name: bds-val
+      project_domain_name: EUMETSAT
+      identity_provider: dedl_openid_provider
+      protocol: openid
+      discovery_endpoint: https://identity.data.destination-earth.eu/auth/realms/dedl/.well-known/openid-configuration
+      client_id: openstack
+      client_secret: 
+    region_name: DEDL-CENTRAL
+    interface: public
+    identity_api_version: 3
