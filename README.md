@@ -1,6 +1,6 @@
 # EWC User Tools
 
-A collection of tools to customize your [European Weather Cloud (EWC)](https://europeanweather.cloud/) tenancy. See full list of Items in the index below.
+A collection of tools to customize your [European Weather Cloud (EWC)](https://europeanweather.cloud/) tenancy. See full list of Items in the [index](#index) below.
 
 Want to learn how other users make the best out of this tooling , or have ideas of your own?
 Head over to [our discussion platform](https://chat.europeanweather.cloud/) and engage with the EWC community. Feedback is always welcomed! ♥️
@@ -24,14 +24,14 @@ Contact [EUMETSAT](http://www.eumetsat.int) for details on the usage and distrib
 
 | Name  | Summary  |
 |------|-----|
-| [openstack-parallel-migration](./items/openstack-parallel-migration/)    | OpenStack workload migration with resume support. |
 | [backup-schedule](./items/backup-schedule/)    | Configure VM disk backups on a schedule. |
+| [openstack-parallel-migration](./items/openstack-parallel-migration/)    | OpenStack workload migration with resume support. |
 
 ## Prerequisites
 
 | Component | Version | License | Home URL |
 |------|---------|---------|--------------|
-| python | 3.10.12 | PSF | https://www.python.org/ |
+| python | 3.12.9 | PSF | https://www.python.org/ |
 | openstacksdk | 4.9.0 | Apache-2.0 | https://docs.openstack.org/openstacksdk/latest/ |
 | PyYAML | 6.0.3 | MIT | https://pyyaml.org/ |
 | tqdm | 4.67.3 | MPL-2.0 AND MIT | https://tqdm.github.io/ |
@@ -39,7 +39,7 @@ Contact [EUMETSAT](http://www.eumetsat.int) for details on the usage and distrib
 | boto3 | 1.42.79 | Apache-2.0 | https://github.com/boto/boto3 |
 | rsync |3.4.1 | GPL-3.0-or-later license | https://rsync.samba.org/ |
 | rclone | 1.73.3 | MIT | https://rclone.org |
-
+| schedule | 1.1.0 | MIT | https://github.com/dbader/schedule |
 
 
 ## Changelog
