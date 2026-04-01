@@ -32,12 +32,13 @@ Contact [EUMETSAT](http://www.eumetsat.int) for details on the usage and distrib
 | Component | Version | License | Home URL |
 |------|---------|---------|--------------|
 | python | 3.12.9 | PSF | https://www.python.org/ |
+| ansible | 12.0.0 | GPL-3.0-or-later | https://pypi.org/project/ansible/ |
 | openstacksdk | 4.9.0 | Apache-2.0 | https://docs.openstack.org/openstacksdk/latest/ |
 | PyYAML | 6.0.3 | MIT | https://pyyaml.org/ |
 | tqdm | 4.67.3 | MPL-2.0 AND MIT | https://tqdm.github.io/ |
 | requests | 2.32.5 | Apache-2.0 | https://github.com/psf/requests  |
 | boto3 | 1.42.79 | Apache-2.0 | https://github.com/boto/boto3 |
-| rsync |3.4.1 | GPL-3.0-or-later license | https://rsync.samba.org/ |
+| rsync |3.4.1 | GPL-3.0-or-later | https://rsync.samba.org/ |
 | rclone | 1.73.3 | MIT | https://rclone.org |
 | schedule | 1.1.0 | MIT | https://github.com/dbader/schedule |
 
