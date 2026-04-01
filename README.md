@@ -24,7 +24,7 @@ Contact [EUMETSAT](http://www.eumetsat.int) for details on the usage and distrib
 
 | Name  | Summary  |
 |------|-----|
-| [backup-schedule](./items/backup-schedule/)    | Configure VM disk backups on a schedule. |
+| [openstack-backups](./items/openstack-backups/)    | Configure VM disk backups on a schedule. |
 | [openstack-parallel-migration](./items/openstack-parallel-migration/)    | OpenStack workload migration with resume support. |
 
 ## Prerequisites
