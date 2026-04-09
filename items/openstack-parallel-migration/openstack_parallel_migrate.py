@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+#
+# License: MIT
+# Copyright (c) 2026 EUMETSAT
+# See the LICENSE file for more details
+
 """
 OpenStack workload migration with resume support.
 

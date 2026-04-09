@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+#
+# License: MIT
+# Copyright (c) 2026 EUMETSAT
+# See the LICENSE file for more details
+
 """
 OpenStack migration prep script (source -> target) with:
 - flavor mapping file (no flavor creation on target)
