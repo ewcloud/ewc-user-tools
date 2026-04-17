@@ -1,0 +1,10 @@
+cloud: cloud_00215
+
+restore:
+- name: TestVM_Volume_1-d452ff49-6c16-4797-99b8-f3778d398ee3-backup-8e9157ca4b36
+  type: volume
+  mode: backup
+  in_place: false
+  new_name: TestVM_Volume_1_restored
+  #flavor: eo1.xsmall
+  #network: private

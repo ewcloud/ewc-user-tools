@@ -1,0 +1,15 @@
+# Ignore python code files
+*.pyc
+*/*.pyc
+
+# Ignore temp files
+.*swp
+
+# Ignore cache
+__pycache__
+
+# Ignore credentials file
+clouds.yaml
+
+# Ignore logs
+logs/*
