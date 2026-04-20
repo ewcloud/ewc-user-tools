@@ -13,7 +13,9 @@ Prerequisites
 * `openstacksdk>=3.0.0`
 * `PyYAML>=6.0.1`
 * `schedule>=1.1.0`
+
 OR
+
 * `docker>=29.1.3`
 
 Usage
