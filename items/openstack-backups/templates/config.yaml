@@ -1,0 +1,21 @@
+cloud: CLOUD_NAME
+
+backup:
+- name: RESOURCE_NAME
+  type: RESOURCE_TYPE
+  mode: BACKUP_MODE
+  scheduler:
+    start: SCHEDULE_START
+    repeat_every: SCHEDULE_REPEAT
+    retention_count: SCHEDULE_RETENTION_COUNT
+    end: SCHEDULE_END
+  attachments:
+  - name: RESOURCE_NAME
+    type: RESOURCE_TYPE
+    mode: BACKUP_MODE
+
+restore:
+- name: RESOURCE_NAME
+  type: RESOURCE_TYPE
+  mode: BACKUP_MODE
+  in_place: IN_PLACE
