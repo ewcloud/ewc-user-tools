@@ -1,6 +1,6 @@
 # Automation of OpenStack backups
 
-The OpenStack Horizon UI allows the manual creation of backups and snapshots from individual instances and volumnes, but does not provide automation features for backing up or restoring multiple resources nor it offers options for the scheduling of backups. The OpenStack Command Line Interface (CLI) provides the same capabilities, without any automation features. The scheduling of backups using the OpenStack CLI must be done using `cron` jobs. Documentation on how to use the OpenStack CLI to create and schedule backups can be found [here]{https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+create+backups+from+VMs} and to restore backups [here]{https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+restore+backups+from+VMs}. With this script, users can create, schedule or restore multiple backups automatically.
+The OpenStack Horizon UI allows the manual creation of backups and snapshots from individual instances and volumnes, but does not provide automation features for backing up or restoring multiple resources nor it offers options for the scheduling of backups. The OpenStack Command Line Interface (CLI) provides the same capabilities, without any automation features. The scheduling of backups using the OpenStack CLI must be done using `cron` jobs. Documentation on how to use the OpenStack CLI to create and schedule backups can be found [here](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+create+backups+from+VMs) and to restore backups [here](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+restore+backups+from+VMs). With this script, users can create, schedule or restore multiple backups automatically.
 
 Functionality
 -------------
@@ -180,9 +180,9 @@ The result of any operations performed by the script can be tested using the Ope
 Documentation
 -------------
 
-* [How to request Openstack Application Credentials]{https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+request+Openstack+Application+Credentials}
-* [How to use the OpenStack CLI]{https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+Install+and+use+Command-Line+client}
-* [How to create a VM using the OpenStack CLI]{https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+create+a+VM+using+the+OpenStack+CLI}
-* [How to create backups from VMs and volumes]{https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+create+backups+from+VMs}
-* [How to restore backups from VMs and volumes]{https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+restore+backups+from+VMs}
+* [How to request Openstack Application Credentials](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+request+Openstack+Application+Credentials)
+* [How to use the OpenStack CLI](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+Install+and+use+Command-Line+client)
+* [How to create a VM using the OpenStack CLI](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+create+a+VM+using+the+OpenStack+CLI)
+* [How to create backups from VMs and volumes](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+create+backups+from+VMs)
+* [How to restore backups from VMs and volumes](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+restore+backups+from+VMs)
 
