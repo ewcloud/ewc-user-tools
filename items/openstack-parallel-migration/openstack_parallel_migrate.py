@@ -4,51 +4,6 @@
 # Copyright (c) 2026 EUMETSAT
 # See the LICENSE file for more details
 
-"""
-OpenStack workload migration with resume support.
-
-Performance-focused changes
----------------------------
-- Multiprocessing via ProcessPoolExecutor instead of ThreadPoolExecutor
-- BufferedStream generator that coalesces source chunks into 4 MiB blocks
-- RAW format for temporary volume-export images on the source cloud
-
-Resume semantics
-----------------
-- If source temporary snapshot / clone volume / temp image already exists and is
-  not in error, reuse it on rerun and wait until it becomes usable.
-- If source temporary resources are missing or in error, recreate them.
-- If target image already exists and is usable, skip streaming and resume from
-  target volume creation.
-- If target volume creation failed but target image succeeded, rerun resumes
-  target volume creation.
-- If target server creation failed after the server was created, rerun resumes
-  from the existing target server.
-- Source temporary resources are cleaned up after target image upload succeeds,
-  and also on rerun when a usable target image already exists.
-
-Features
---------
-- clouds.yaml auth support, including OIDC auth plugins supported by openstacksdk
-- migrate.yaml configuration
-- CLI overrides:
-    --source CLOUD
-    --target CLOUD
-    --servers vm1 vm2 ...
-    --parallel N
-- parallel instance migrations
-- live phase-based progress bars
-- per-server current stage tracking in separate state files
-- Glance HTTP streaming source -> target
-- preserve fixed IPs by creating target ports with same fixed IPs on same-named target networks
-- target is always boot-from-volume
-- flavor mapping file support
-- security groups reused by exact name on target, with source rules copied into them
-- source workload support:
-    * source instances booted from volume
-    * source instances booted directly from image
-    * attached data volumes in both cases
-"""
 # Need to install pv on instance #
 
 import argparse
