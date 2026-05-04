@@ -1,5 +1,9 @@
 clouds:
+  
+  # Used by openstacksdk for operations on source
+  # Update auth_url, username, password, project_name, domain names, and region_name according to your source cloud (e.g. CloudFerro WAW3-1).
   source:
+    
     auth:
       auth_url: https://keystone.cloudferro.com:5000/v3
       username: admin-eumetsat-sandbox
@@ -12,6 +16,7 @@ clouds:
     identity_api_version: 3
 
   # Used by openstacksdk for actual operations on target
+  # Update auth_url, project_name, project_domain_name, and region_name
   target:
     auth_type: v3token
     auth:
@@ -23,7 +28,9 @@ clouds:
     interface: public
     identity_api_version: 3
 
+
   # Used ONLY to let the CLI obtain a token (script runs: openstack --os-cloud target_oidc token issue ...)
+  # Update username, password
   target_oidc:
     auth_type: v3oidcpassword
     auth:
