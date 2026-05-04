@@ -1,11 +1,24 @@
+# List of servers to copy over
+servers: 
+  - <server>
+
+# Flavor mapping file to translate source flavors to appropriate ones within the target cloud.
+flavor_map_file: flavor-map.yml
+
+# Number of parallel migrations
+parallel_streams: 2
+
+# Whether to attach data volumes on the VMs created within the target cloud
+attach_data_volumes: true
+
+# Whether to create VM within the target cloud. Useful for dry runs to validate configuration
+create_target_server: true
+
+# Source cloud name (should match one of the sub-attributes for clouds.yaml)
 source_cloud: source
+
+# Target cloud name (should match one of the sub-attributes for clouds.yaml)
 target_cloud: target_oidc
 
-servers:
-  - ahmedtst
-
-flavor_map_file: flavor-map.yml
-create_target_server: true
+# (Optional) Custom prefix to add on all VMs created within the target cloud
 target_server_name_prefix: 
-attach_data_volumes: true
-parallel_streams: 2

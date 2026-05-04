@@ -1,57 +1,109 @@
-# Migration script across Openstack Clouds
+# OpenStack Parallel Migrate
+
+A script automating the process of copying resources (instances, volumes, and configurations) from one OpenStack cloud to another. It is designed specifically for users of the [European Weather Cloud (EWC)](https://europeanweather.cloud/), supporting migrations with resume capabilities, parallel transfers (e.i. multiple simultaneous operations), and preservation of networking and security settings.
+
+## Features
+
+* Performance-focused:
+  * Multiprocessing via `ProcessPoolExecutor` instead of `ThreadPoolExecutor`
+  * BufferedStream generator that coalesces source chunks into 4 MiB blocks
+  * RAW format for temporary volume-export images on the source cloud
+* Resume logic supported:
+  * If source temporary snapshot / clone volume / temp image already exists and is
+    not in error, reuse it on rerun and wait until it becomes usable.
+  * If source temporary resources are missing or in error, recreate them.
+  * If target image already exists and is usable, skip streaming and resume from
+    target volume creation.
+  * If target volume creation failed but target image succeeded, rerun resumes
+    target volume creation.
+  * If target server creation failed after the server was created, rerun resumes
+    from the existing target server.
+  * Source temporary resources are cleaned up after target image upload succeeds,
+    and also on rerun when a usable target image already exists.
+* CLI overrides:
+    * `--source CLOUD`
+    * `--target CLOUD`
+    * `--servers vm1 vm2 ...`
+    * `--parallel N`
+* Parallel instance migrations
+* Live phase-based progress bars
+* Per-server current stage tracking in separate state files
+* Glance HTTP streaming source -> target
+* Preserve fixed IPs by creating target ports with same fixed IPs on same-named target networks
+* Target is always boot-from-volume
+* Flavor mapping file support
+* Security groups reused by exact name on target, with source rules copied into them
+* Source workload support:
+    * Source instances booted from volume
+    * Source instances booted directly from image
+    * Attached data volumes in both cases
+
+## Prerequisites
+
+* Install [python](https://www.python.org/downloads) (version 3.12 or higher)
+* Install [pv](https://www.ivarch.com/programs/pv.shtml) (version 1.6.6)
+* Install [openstacksdk](https://docs.openstack.org/openstacksdk/latest/install/index.html) (version 4.9.0)
+* Install [PyYAML](https://pypi.org/project/PyYAML/) (version 6.0.3)
 
 
-OpenStack workload migration with resume support.
+## Usage
 
-Performance-focused features
----------------------------
-- Multiprocessing via ProcessPoolExecutor instead of ThreadPoolExecutor
-- BufferedStream generator that coalesces source chunks into 4 MiB blocks
-- RAW format for temporary volume-export images on the source cloud
-
-Resume logic
-----------------
-- If source temporary snapshot / clone volume / temp image already exists and is
-  not in error, reuse it on rerun and wait until it becomes usable.
-- If source temporary resources are missing or in error, recreate them.
-- If target image already exists and is usable, skip streaming and resume from
-  target volume creation.
-- If target volume creation failed but target image succeeded, rerun resumes
-  target volume creation.
-- If target server creation failed after the server was created, rerun resumes
-  from the existing target server.
-- Source temporary resources are cleaned up after target image upload succeeds,
-  and also on rerun when a usable target image already exists.
-
-Features
---------
-- CLI overrides:
-    --source CLOUD
-    --target CLOUD
-    --servers vm1 vm2 ...
-    --parallel N
-- parallel instance migrations
-- live phase-based progress bars
-- per-server current stage tracking in separate state files
-- Glance HTTP streaming source -> target
-- preserve fixed IPs by creating target ports with same fixed IPs on same-named target networks
-- target is always boot-from-volume
-- flavor mapping file support
-- security groups reused by exact name on target, with source rules copied into them
-- source workload support:
-    * source instances booted from volume
-    * source instances booted directly from image
-    * attached data volumes in both cases
-----
-Packages required: python3, pv
-
-Files required:
-- clouds.yaml => auth support, including OIDC auth plugins supported by openstacksdk
-- migrate.yaml => migration configuration
----
-Knobs:
+### 1. Clone or download this repository.
+  ```bash
+  git clone https://github.com/ewcloud/ewc-user-tools.git
 ```
-# python3 openstack_parallel_migrate.py -h
+#### 1.1. Change to the specific Item's subdirectory
+  ```bash
+  cd ewc-user-tools/items/haproxy-flavour
+  ```
+#### 1.2. (Optional) Checkout an specific Item's version
+
+  > ⚠️ Make sure to replace `x.y.z` in the command below, with your version of preference.
+
+  ```bash
+  git checkout x.y.z
+  ```
+### 2. Update configuration files
+> ✅ See [Configuration](#configuration) section below for further details
+
+Modify the sample `clouds.yaml`  in your working directory with entries for your source and target clouds, and update the sample `migrate.yaml` file to specify which resources to migration.
+
+### 3. Run the migration
+
+#### 3.1. Basic run
+```bash
+python3 openstack_parallel_migrate.py
+```
+
+#### 3.2. Run overrides
+```bash
+python3 openstack_parallel_migrate.py \
+  --source source \
+  --target target_oidc \
+  --servers ahmedtst3 ahmedtst4 \
+  --parallel 2
+```
+
+
+## Configuration
+
+
+### Authentication and authorization
+
+The [clouds.yaml](./clouds.yaml) file contains authentication and connection details for your source and target OpenStack clouds. It is configuration file with standard structure, used by OpenStack SDK and the OpenStack CLI (see the [OpenStack's official documentation](https://docs.openstack.org/python-openstackclient/latest/configuration/index.html#clouds-yaml) for file structure details).
+
+### Source and target
+We rely on a configuration file with custom structure, to specify where the resources to be migrated are located, and where they should be copied over to. Checkout the attributes their descriptions in the sample [migrate.yaml](./migrate.yaml) file.
+
+### CLI arguments
+Arguments passed to the script at runtime override those in the static configuration files. To list available CLI
+arguments run
+
+```bash
+python3 openstack_parallel_migrate.py -h
+```
+
+```
 usage: openstack_parallel_migrate.py [-h] [--config CONFIG] [--source SOURCE] [--target TARGET] [--servers SERVERS [SERVERS ...]] [--parallel PARALLEL]
 
 OpenStack migration with resume support
@@ -65,10 +117,15 @@ options:
                         Override servers list from migrate.yaml
   --parallel PARALLEL   Override parallel_streams from migrate.yaml
 ```
+## Output
 
-Sample output:
+For an example run command such as:
+```bash
+python3 openstack_parallel_migrate_curl.py --source source --target target_oidc --servers ahmedtst3 ahmedtst4
 ```
-# python3 openstack_parallel_migrate_curl.py --source source --target target_oidc --servers ahmedtst3 ahmedtst4
+
+The expected output would be:
+```
 [INFO] Selected 2 server(s)
 [INFO] Parallel streams: 2
 [INFO] Buffered stream chunk size: 4194304 bytes
@@ -86,7 +143,7 @@ ahmedtst3:phases:   0%|                                                         
 [INFO] Source curl URL: https://api.waw3-1.cloudferro.com:9292/v2/images/21ef8013-8a7d-472b-9817-9fb1e032e624/file                                                                         | 1/10 [00:00<00:01,  6.32it/s][INFO] Target curl URL: https://glance-api.cloud.central.data.destination-earth.eu:443/v2/images/20fdec4d-8e6a-4776-b9e4-d2caee11510a/file                                                    | 0.00/16.0G [00:00<?, ?B/s]ahmedtst4:volume:9f1a1b7e-8b93-4556-ba3e-f0637a6d2fba:image:   0%|                                                                                                                            | 0.00/16.0G [00:00<?, ?B/saahmedtst4:root: 2.45GiB 0:00:38 [66.9MiB/s] [============ahmedtst3:root: 2.53GiB 0:00:40 [65.3MiB/s] [======================>                                                                                             ahmedtst3:root: 16.0GiB 0:04:20 [62.8MiB/s] [==========================================================================================================================================================>] 100%
 [INFO] ahmedtst3: target image upload submitted: aeecd94a-35d6-4642-be13-285c94239cce
 [INFO] ahmedtst3: creating target volume for root c27886c2-f152-4a70-9c4d-d99b33b1df53
-[INFO] ahmedtst3: attempting target volume creation from image aeecd94a-35d6-4642-be13-285c94239cce                                                                                                                       
+[INFO] ahmedtst3: attempting target volume creation from image aeecd94a-35d6-4642-be13-285c94239cce                                                                                                                      
 ahmedtst3:phases:  20%|████████████████████████████████▌                                                                                                                                  | 2/10 [04:23<20:38, 154.75s/ita
 [INFO] -- Waiting for target volume a8bbf2fd-4d19-49da-ad33-d243128aa19a: current status=creating, target=available
 ahmedtst3:phases:  20%|████████████████████████████████▌                                                                                                                                  | 2/10 [04:24<20:38, 154.75s/itahmedtst4:root: 16.0GiB 0:04:23 [62.2MiB/s] [==========================================================================================================================================================>] 100%
@@ -117,7 +174,7 @@ ahmedtst3:phases:  20%|███████████████████
 [INFO] ahmedtst3: source Glance endpoint = https://api.waw3-1.cloudferro.com:9292/v2/
 [INFO] ahmedtst3: target Glance endpoint = https://glance-api.cloud.central.data.destination-earth.eu:443/v2/
 [INFO] Source curl URL: https://api.waw3-1.cloudferro.com:9292/v2/images/9b908ffc-1a33-49fb-90aa-8791d576f6d3/file
-[INFO] Target curl URL: https://glance-api.cloud.central.data.destination-earth.eu:443/v2/images/60c13c68-b807-4344-97d2-215c18c5a4de/file                                                                                
+[INFO] Target curl URL: https://glance-api.cloud.central.data.destination-earth.eu:443/v2/images/60c13c68-b807-4344-97d2-215c18c5a4de/file                                                                               
 ahmedtst3:phases:  40%|█████████████████████████████████████████████████████████████████▏                                                                                                 | 4/10 [06:58<11:04, 110.81s/ita[INFO] ahmedtst4: streaming data volume d6b9208b-e15b-4ddb-b3f9-452cdf797826 to target image                                                                                                             ]  1% ETA 0:02:36
 [INFO] ahmedtst4: starting stream of volume:d6b9208b-e15b-4ddb-b3f9-452cdf797826 to target image mig-img-ahmedtst4-volume-d6b9208b-e15b-4ddb-b3f9-452cdf797826-bb9472147cba
 [INFO] ahmedtst4: source Glance endpoint = https://api.waw3-1.cloudferro.com:9292/v2/
@@ -127,8 +184,8 @@ ahmedtst3:phases:  40%|███████████████████
                                                                                                                                                                                                                          aahmedtst3:data: 10.0GiB 0:02:39 [64.1MiB/s] [==========================================================================================================================================================>] 100%
 ahmedtst4:data: 10.0GiB 0:02:36 [65.3MiB/s] [==========================================================================================================================================================>] 100%
 [INFO] ahmedtst3: target image upload submitted: 60c13c68-b807-4344-97d2-215c18c5a4de
-[INFO] ahmedtst3: creating target volume for data d3bae72c-e83b-4096-bf0f-02611a69af00                                                                                                                                    
-[INFO] ahmedtst3: attempting target volume creation from image 60c13c68-b807-4344-97d2-215c18c5a4de                                                                                                                       
+[INFO] ahmedtst3: creating target volume for data d3bae72c-e83b-4096-bf0f-02611a69af00                                                                                                                                   
+[INFO] ahmedtst3: attempting target volume creation from image 60c13c68-b807-4344-97d2-215c18c5a4de                                                                                                                      
 [INFO] -- Waiting for target volume 5279e923-8cb8-47a5-bc9f-678cb03f531c: current status=creating, target=available
 [INFO] ahmedtst4: target image upload submitted: 2828c53c-df72-46e2-9239-6bb561518043███████████████████▌                                                                                 | 5/10 [09:40<10:45, 129.11s/it]
 [INFO] ahmedtst4: creating target volume for data d6b9208b-e15b-4ddb-b3f9-452cdf797826
@@ -167,4 +224,5 @@ ahmedtst4:phases: 100%|███████████████████
 ahmedtst4:phases: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 10/10 [11:28<00:00, 40.34s/it]
 [INFO] ahmedtst3: completed
 [INFO] ahmedtst3: migration completed
-ahmedtst3:phases: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 10/10 [11:37<00:00, 69.72s/it]```
+ahmedtst3:phases: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 10/10 [11:37<00:00, 69.72s/it]
+```
