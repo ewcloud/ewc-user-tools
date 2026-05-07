@@ -55,8 +55,14 @@ def parse_config_file(config_file_path: str) -> dict:
                 raise RuntimeError(f'{yaml_error}: Cloud name missing.')
 
 
-            # Only valid authentication method is with Application Credentials with an OpenRC file
-            config['auth'] = 'openrc'
+            # Authentication method can be with Application Credentials from an OpenRC file or a clouds.yaml file
+            print('app_credentials' in yaml_contents)
+            if 'app_credentials' not in yaml_contents:
+                raise RuntimeError(f'{yaml_error}: Missing application credentials. The entry \'app_credentials\' is required.')
+            elif yaml_contents['app_credentials'] not in ['openrc','clouds.yaml']:
+                raise RuntimeError(f'{yaml_error}: Unknown application credentials: The entry \'app_credentials\' should be either \'openrc\' or \'clouds.yaml\'.')
+            else:
+                config['app_credentials'] = yaml_contents['app_credentials']
 
             # Validate the backup entry
             if 'backup' in yaml_contents:
@@ -166,13 +172,13 @@ def parse_config_file(config_file_path: str) -> dict:
     else:
         raise FileNotFoundError('Backups config file not found.')
 
-def authenticate(auth: str) -> None:
+def authenticate(app_credentials: str) -> None:
     """
-    Ensure authentication credential are ready.
+    Ensure application credentials are ready.
     Two methods of authentication, with openrc file (pre-source) or clouds.yaml file
     """
 
-    if auth=="openrc":
+    if app_credentials=="openrc":
         # Check the appropriate environment variables have been set
         required_envs = ['OS_AUTH_TYPE', 'OS_AUTH_URL', 'OS_IDENTITY_API_VERSION', 'OS_REGION_NAME', 'OS_INTERFACE', 'OS_USERNAME', 'OS_USER_DOMAIN_NAME', 'OS_PROJECT_DOMAIN_ID', 'OS_APPLICATION_CREDENTIAL_ID', 'OS_APPLICATION_CREDENTIAL_SECRET']
 
@@ -182,7 +188,7 @@ def authenticate(auth: str) -> None:
             elif env == 'OS_AUTH_TYPE' and os.getenv(env) != 'v3applicationcredential':
                 raise RuntimeError(f'Authentication not possible. Authentication type not valid, you must authenticate using application credentials')
 
-    elif auth=='clouds.yaml':
+    elif app_credentials=='clouds.yaml':
         # Check the the appropriate clouds.yaml file exists in the current directory
         if not os.path.exists('clouds.yaml'):
             raise RuntimeError(f'Authentication not possible. Required file `clouds.yaml` not present in the current directory.')
@@ -206,7 +212,7 @@ def main():
         config = parse_config_file(args.config_file_path)
 
         # Ensure authentication credentials are ready
-        authenticate(config['auth'])
+        authenticate(config['app_credentials'])
 
         # Connect to the cloud
         cloud = openstack_connect(config['cloud'])
