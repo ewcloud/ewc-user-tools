@@ -6,6 +6,7 @@ Author: Tomas Gonzalo
 Notes: many functions adapted from the openstack-migration repository by Ahmed Naga
 """
 
+import os
 import hashlib
 import time
 from datetime import datetime
@@ -23,7 +24,18 @@ def openstack_connect(cloud_name: str) -> Connection:
     Connect to the OS cloud
     """
 
-    connection = openstack.connect(cloud=cloud_name)
+    connection = openstack.connect(
+        auth_type = os.getenv('OS_AUTH_TYPE'),
+        auth_url = os.getenv('OS_AUTH_URL'),
+        identity_api_version = os.getenv('OS_IDENTITY_API_VERSION'),
+        region_name = os.getenv('OS_REGION_NAME'),
+        interface = os.getenv('OS_INTERFACE'),
+        username = os.getenv('OS_USERNAME'),
+        user_domain_name = os.getenv('OS_USER_DOMAIN_NAME'),
+        project_domain_id = os.getenv('OS_PROJECT_DOMAIN_ID'),
+        application_credential_id = os.getenv('OS_APPLICATION_CREDENTIAL_ID'), 
+        application_crendetial_secret = os.getenv('OS_APPLICATION_CREDENTIAL_SECRET') 
+    )
     connection.authorize()
     return connection
 

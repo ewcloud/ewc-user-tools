@@ -54,13 +54,9 @@ def parse_config_file(config_file_path: str) -> dict:
             else:
                 raise RuntimeError(f'{yaml_error}: Cloud name missing.')
 
-            # Validate the authentication method (default clouds.yaml)
-            # FIXME: Currently the openrc method does not work, so force it to be clouds.yaml
-            #if "auth" in yaml_contents:
-            #    config['auth'] = yaml_contents['auth']
-            #else:
-            #    config['auth'] = 'openrc'
-            config['auth'] = 'clouds.yaml'
+
+            # Only valid authentication method is with Application Credentials with an OpenRC file
+            config['auth'] = 'openrc'
 
             # Validate the backup entry
             if 'backup' in yaml_contents:
@@ -178,12 +174,13 @@ def authenticate(auth: str) -> None:
 
     if auth=="openrc":
         # Check the appropriate environment variables have been set
-        #required_envs = ['OS_IDENTITY_API_VERSION', 'OS_AUTH_URL', 'OS_AUTH_TYPE', 'OS_USERNAME', 'OS_PASSWORD', 'OS_PROJECT_NAME', 'OS_PROJECT_DOMAIN_ID']
-        required_envs = ['OS_AUTH_URL', 'OS_INTERFACE', 'OS_IDENTITY_API_VERSION', 'OS_USERNAME', 'OS_REGION_NAME', 'OS_USER_DOMAIN_NAME', 'OS_PROJECT_DOMAIN_ID', 'OS_AUTH_TYPE', 'OS_APPLICATION_CREDENTIAL_ID', 'OS_APPLICATION_CREDENTIAL_SECRET']
+        required_envs = ['OS_AUTH_TYPE', 'OS_AUTH_URL', 'OS_IDENTITY_API_VERSION', 'OS_REGION_NAME', 'OS_INTERFACE', 'OS_USERNAME', 'OS_USER_DOMAIN_NAME', 'OS_PROJECT_DOMAIN_ID', 'OS_APPLICATION_CREDENTIAL_ID', 'OS_APPLICATION_CREDENTIAL_SECRET']
 
         for env in required_envs:
             if env not in os.environ:
                 raise RuntimeError(f'Authentication not possible. Environment variable {env} not set. Source the openrc file in order to set all required environment varibles')
+            elif env == 'OS_AUTH_TYPE' and os.getenv(env) != 'v3applicationcredential':
+                raise RuntimeError(f'Authentication not possible. Authentication type not valid, you must authenticate using application credentials')
 
     elif auth=='clouds.yaml':
         # Check the the appropriate clouds.yaml file exists in the current directory

@@ -17,33 +17,11 @@ OR
 * `docker>=29.1.3`
 
 ## Usage
-The script can be run either directly using the current python environment, satisfying the prerequisites above, or inside a docker container. In either case, it is necessary to first set up the authentication credentials file and the configuration file.
+The script can be run either directly using the current python environment, satisfying the prerequisites above, or inside a docker container. In either case, it is necessary to first set up the authentication credentials file and the configuration file. It is highly recommended not to run this script within the VM you wish to back up or restore.
 
 ### 1. Authentication credentials
 
-It is necessary to have the required OpenStack credentials to access the project/domain/cloud specified in the configuration file. The program expects a credentials file in the root directory called `clouds.yaml`, which contains the necessary information for authentication into the cloud. An example authentication file to acess in to `my_cloud` with `my_username` is
-```
-clouds:
-    my_cloud:
-        auth_type: v3oidcpassword
-        auth:
-            auth_url: https://keystone.cloudferro.com:5000/v3
-            username: my_username
-            password: my_password
-            project_id: my_project_id
-            project_name: my_project_name
-            project_domain_name: my_domain_name
-            project_domain_id: my_project_domain_id
-            client_id: openstack
-            client_secret: my_client_secret
-            protocol: openid
-            identity_provider: eumetsat_provider
-            discovery_endpoint: https://identity.cloudferro.com/auth/realms/Eumetsat-elasticity/.well-known/openid-configuration
-        region_name: WAW3-1
-        interface: public
-        identity_api_version: 3
-```
-The `clouds.yaml` file can be obtained from the cloud server provider or filled manually with the information in an OpenStack RC file. A template `clouds.yaml` file can be found in the `templates` directory.
+To run this script it is necessary to have the required OpenStack application credentials to access the project/domain/cloud specified in the configuration file. You can find information on how to create application credentials and obtain the RC file in [here](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+request+Openstack+Application+Credentials).
 
 ### 2. Configuration file
 
