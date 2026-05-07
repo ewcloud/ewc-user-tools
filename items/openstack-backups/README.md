@@ -19,15 +19,16 @@ OR
 ## Usage
 The script can be run either directly using the current python environment, satisfying the prerequisites above, or inside a docker container. In either case, it is necessary to first set up the authentication credentials file and the configuration file. It is highly recommended not to run this script within the VM you wish to back up or restore.
 
-### 1. Authentication credentials
+### 1. Application credentials
 
-To run this script it is necessary to have the required OpenStack application credentials to access the project/domain/cloud specified in the configuration file. You can find information on how to create application credentials and obtain the RC file in [here](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+request+Openstack+Application+Credentials).
+To run this script it is necessary to have the required OpenStack application credentials to access the project/domain/cloud specified in the configuration file. You can find information on how to create application credentials and obtain the RC file or clouds.yaml file in [here](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+Cloud+Management+UI+-+Identity+-+Create+Application+Credentials)
 
 ### 2. Configuration file
 
 A configuration YAML file that contains the requested information to create, schedule or restore backups is required to run the script. A template YAML file can be found in the `templates` directory and some examples in the `tests` directory. The structure of this configuration file is as follows
 ```
 cloud: <cloud_name>
+app_credentials: <credentials_method>
 
 backup:
 - name: <resource_name>
@@ -41,7 +42,7 @@ restore:
   mode: <backup_mode>
 - ...
 ```
-where the `<cloud_name>` corresponds to the name of cloud (domain name) to which the various resources belong. The optional `backup` node contains instructions to create and schedule backups, as explained below, and the optional `restore` node contains instructions to restore backups.
+where the `<cloud_name>` corresponds to the name of cloud (domain name) to which the various resources belong. The `app_credentials` node indicates the mode in which the credentials will be provided, which should be either `openrc` if the application credentials have been source from an OpenRC file, or `clouds.yaml` if the application credentials are stored in an eponymous file in the current directory. The optional `backup` node contains instructions to create and schedule backups, as explained below, and the optional `restore` node contains instructions to restore backups.
 
 
 #### 2.1 Creating backups
