@@ -1,6 +1,6 @@
 # Automation of OpenStack backups
 
-The OpenStack Horizon UI allows the manual creation of backups and snapshots from individual instances and volumnes, but does not provide automation features for backing up or restoring multiple resources nor it offers options for the scheduling of backups. The OpenStack Command Line Interface (CLI) provides the same capabilities, without any automation features. The scheduling of backups using the OpenStack CLI must be done using `cron` jobs. Documentation on how to use the OpenStack CLI to create and schedule backups can be found [here](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+create+backups+from+VMs) and to restore backups [here](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+restore+backups+from+VMs). With this script, users can create, schedule or restore multiple backups automatically.
+The OpenStack Horizon UI allows the manual creation of backups and snapshots from individual instances and volumes, but does not provide automation features for backing up or restoring multiple resources nor it offers options for the scheduling of backups. The OpenStack Command Line Interface (CLI) provides the same capabilities, without any automation features. The scheduling of backups using the OpenStack CLI must be done using `cron` jobs. Documentation on how to use the OpenStack CLI to create and schedule backups can be found [here](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+create+backups+from+VMs) and to restore backups [here](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+restore+backups+from+VMs). With this script, users can create, schedule or restore multiple backups automatically.
 
 ## Functionality
 This script automates the creation, restoration and scheduling of backups using the OpenStack SDK. This allows users with OpenStack credentials to create backups or snapshots of multiple instances and their attached volumes, scheduling backups for a future time with and without repetition and with and without a retention count. It also allows the restoration of multiple instances or volumes, in-place or to a new instance or volume.
@@ -28,7 +28,7 @@ To run this script it is necessary to have the required OpenStack application cr
 A configuration YAML file that contains the requested information to create, schedule or restore backups is required to run the script. A template YAML file can be found in the `templates` directory and some examples in the `tests` directory. The structure of this configuration file is as follows
 ```
 cloud: <cloud_name>
-app_credentials: <credentials_method>
+authentication: <credentials_method>
 
 backup:
 - name: <resource_name>
@@ -42,7 +42,7 @@ restore:
   mode: <backup_mode>
 - ...
 ```
-where the `<cloud_name>` corresponds to the name of cloud (domain name) to which the various resources belong. The `app_credentials` node indicates the mode in which the credentials will be provided, which should be either `openrc` if the application credentials have been source from an OpenRC file, or `clouds.yaml` if the application credentials are stored in an eponymous file in the current directory. The optional `backup` node contains instructions to create and schedule backups, as explained below, and the optional `restore` node contains instructions to restore backups.
+where the `<cloud_name>` corresponds to the name of cloud (domain name) to which the various resources belong. The `authentication` node indicates the mode in which the credentials will be provided, which should be either `openrc` if the application credentials have been sourced from an OpenRC file, or `clouds.yaml` if the application credentials are stored in an eponymous file in the current directory. The optional `backup` node contains instructions to create and schedule backups, as explained below, and the optional `restore` node contains instructions to restore backups.
 
 
 #### 2.1 Creating backups
@@ -62,7 +62,7 @@ backup:
 - ...
 ```
 
-where `<resource_name>` is the name of the instance or volume to back up, `<resource_type>` is either `instance` or `volume` and `<backup_mode>` is either `snapshot` or `backup`. Any number of entries, corresponding to the resources to backup, can be provided to the `backup` node. By default, attachments are not backed up along with the resource. In order to back these up, one must provide the `attachment` field to the resource, as seen above. It is possible to select to backup all attachments of the resource, with `attachments: all`, or a specific set, by providing a list of the resources to backup. It is recommended to stop instances and detaching volumes before backing them up. This is the default behaviour. The options `stop` and `detach` can be supplied to instances and volumes, respectively, to change this default behaviour.
+where `<resource_name>` is the name of the instance or volume to back up, `<resource_type>` is either `instance` or `volume` and `<backup_mode>` is either `snapshot` or `backup`. Any number of entries, corresponding to the resources to backup, can be provided to the `backup` node. By default, attachments are not backed up along with the resource (with the exception of root volume of volume-backed instances). In order to back these up, one must provide the `attachment` field to the resource, as seen above. It is possible to select to backup all attachments of the resource, with `attachments: all`, or a specific set, by providing a list of the resources to backup. It is recommended to stop instances and detaching volumes before backing them up. This is the default behaviour. The options `stop` and `detach` can be supplied to instances and volumes, respectively, to change this default behaviour.
 
 #### 2.2 Scheduling backups
 

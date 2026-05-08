@@ -63,6 +63,13 @@ def get_volume(cloud: Connection, name_or_id: str) -> Volume:
 
     return cloud.block_storage.get_volume(volume.id)
 
+def find_image(cloud: Connection, name_or_id: str) -> Image:
+    """
+    Find an image
+    """
+
+    return cloud.compute.find_image(name_or_id, ignore_missing=True)
+
 def get_image(cloud: Connection, name_or_id: str) -> Image:
     """
     Find and get an image object
@@ -75,6 +82,13 @@ def get_image(cloud: Connection, name_or_id: str) -> Image:
 
     return cloud.compute.get_image(image.id)
 
+def find_volume_snapshot(cloud: Connection, name_or_id: str):
+    """
+    Find volume snapshot
+    """
+
+    return cloud.block_storage.find_snapshot(name_or_id, ignore_missing=True)
+
 def get_volume_snapshot(cloud: Connection, name_or_id: str):
     """
     Find and get a volume snapshot
@@ -86,6 +100,13 @@ def get_volume_snapshot(cloud: Connection, name_or_id: str):
         raise RuntimeError(f'Snapshot {name_or_id} not found.')
 
     return cloud.block_storage.get_snapshot(snapshot.id)
+
+def find_volume_backup(cloud: Connection, name_or_id: str):
+    """
+    Find volume backup
+    """
+
+    return cloud.block_storage.find_backup(name_or_id, ignore_missing=True)
 
 def get_volume_backup(cloud: Connection, name_or_id: str):
     """
