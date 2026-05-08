@@ -117,11 +117,11 @@ def get_attachments(cloud: Connection, backup: dict):
     attachments = []
     for attachment in raw_attachments:
         volume = get_volume(cloud, attachment.volume_id)
-        attachments.append({'name': volume.name,
-                            'id': volume.id,
+        attachments.append({'id': volume.id,
                             'type': 'volume',
                             'mode': backup['mode'],
-                            'detach': True})
+                            'bootable': volume['bootable'],
+                            'detach': False if volume['bootable'] else True})
 
     return attachments
 
