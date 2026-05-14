@@ -54,7 +54,7 @@ A script automating the process of copying resources (instances, volumes, and co
 ```
 #### 1.1. Change to the specific Item's subdirectory
   ```bash
-  cd ewc-user-tools/items/haproxy-flavour
+  cd ewc-user-tools/items/openstack-parallel-migrate
   ```
 #### 1.2. (Optional) Checkout an specific Item's version
 
@@ -78,8 +78,8 @@ python3 openstack_parallel_migrate.py
 #### 3.2. Run overrides
 ```bash
 python3 openstack_parallel_migrate.py \
-  --source source \
-  --target target_oidc \
+  --source CLOUD \
+  --target CLOUD \
   --servers ahmedtst3 ahmedtst4 \
   --parallel 2
 ```
