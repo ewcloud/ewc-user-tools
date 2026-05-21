@@ -153,7 +153,6 @@ def parse_config_file(config_file_path: str) -> dict:
                     restore['in_place'] = restore.get('in_place', False)
 
                     # If the restoration is for an instance and not in place, one needs to provide flavor, network and (optionally) security groups
-                    # TODO: Might restore all networks later
                     if restore['type'] == 'instance' and not restore['in_place']:
                         if 'flavor' not in restore.keys():
                             raise RuntimeError(f'{yaml_error}: Restore entry missing flavor, required for non-in-place restorations.')
@@ -207,8 +206,37 @@ def authenticate(authentication: str) -> None:
         if not os.path.exists('clouds.yaml'):
             raise RuntimeError(f'Authentication not possible. Required file `clouds.yaml` not present in the current directory.')
 
+        # Check contents of clouds.yaml
+        with open("clouds.yaml", 'r') as f:
 
-        # TODO: Maybe check contents of clouds.yaml
+            clouds_yaml = yaml.safe_load(f)
+
+            if 'clouds' not in clouds_yaml:
+                raise RuntimeError(f'Authentication not possible, missing `clouds` entry in `clouds.yaml` file.')
+
+            clouds = clouds_yaml['clouds']
+            if 'openstack' not in clouds:
+                raise RuntimeError(f'Authentication not possible, missing `openstack` entry in `clouds.yaml` file.')
+
+            openstack = clouds['openstack']
+
+            if 'auth_type' not in openstack:
+                raise RuntimeError(f'Authentication not possible, missing `auth_type` in `clouds.yaml` file.')
+
+            if 'auth' not in openstack or  \
+               'auth_url' not in openstack['auth'] or \
+               'application_credential_id' not in openstack['auth'] or \
+               'application_credential_secret' not in openstack['auth'] :
+                    raise RuntimeError(f'Authenciation not possible, missing application credentials in `clouds.yaml` file.')
+
+            if 'regions' not in openstack:
+                raise RuntimeError(f'Authentication not possible, missing `region` in `clouds.yaml` file.')
+
+            if 'interface' not in openstack:
+                raise RuntimeError(f'Authentication not possible, missing `interface` in `clouds.yaml` file.')
+
+            if 'identity_api_version' not in openstack:
+                raise RuntimeError(f'Authentication not possible, missing `identity_api_version` in `clouds.yaml` file.')
 
     else:
         raise RuntimeError(f'Authentication not possible. Unrecognised authentication metod.')

@@ -202,7 +202,7 @@ def create_volume_snapshot(cloud: Connection, backup: dict) -> dict:
     # If volume was detached, attach it back
     for attachment in attachments:
         if 'server_id' in attachment.keys():
-            ensure_volume_attached(cloud, volume, attachment['server_id'], attachment['device'])
+            ensure_volume_attached(cloud, volume.id, attachment['server_id'], attachment['device'])
 
     result = {
         'volume_name': volume.name,
@@ -259,7 +259,7 @@ def create_volume_backup(cloud: Connection, backup: dict) -> dict:
     # If volume was detached, attach it back
     for attachment in attachments:
         if 'server_id' in attachment.keys():
-            ensure_volume_attached(cloud, volume, attachment['server_id'], attachment['device'])
+            ensure_volume_attached(cloud, volume.id, attachment['server_id'], attachment['device'])
 
     result = {
         'volume_name': volume.name,

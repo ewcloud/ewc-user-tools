@@ -39,6 +39,13 @@ def openstack_connect(cloud_name: str) -> Connection:
     connection.authorize()
     return connection
 
+def find_server(cloud: Connection, name_or_id: str) -> Server:
+    """
+    Find a server
+    """
+
+    return cloud.compute.find_server(name_or_id, ignore_missing=True)
+
 def get_server(cloud: Connection, name_or_id: str) -> Server:
     """
     Find and get server object
@@ -120,6 +127,7 @@ def get_volume_backup(cloud: Connection, name_or_id: str):
 
     return cloud.block_storage.get_backup(backup.id)
 
+
 def get_attachments(cloud: Connection, backup: dict):
     """
     Get list of attachments of resource
@@ -130,6 +138,7 @@ def get_attachments(cloud: Connection, backup: dict):
         raise RuntimeError(f'Resource {backup["name"]} is not an instance and therefore cannot have attachments')
 
     server = get_server(cloud, backup['name'])
+
     logger.info(f"Getting attachments for server {server.name}")
     raw_attachments = cloud.compute.volume_attachments(server)
 
@@ -140,11 +149,100 @@ def get_attachments(cloud: Connection, backup: dict):
         volume = get_volume(cloud, attachment.volume_id)
         attachments.append({'id': volume.id,
                             'type': 'volume',
-                            'mode': backup['mode'],
+                            'mode': backup["mode"],
                             'bootable': volume['bootable'],
+                            'device': attachment.device,
                             'detach': False if volume['bootable'] else True})
 
     return attachments
+
+def get_fixed_ips(cloud: Connection, server_id: str) -> list:
+    """
+    Get the fixed ips from a server
+    """
+
+    logger.info(f'Getting fixed ips for server {server_id}')
+
+    ports = cloud.network.ports(device_id=server_id)
+    fixed_ips = []
+
+    # Record fixed IPs
+    for port in ports:
+        for fixed_ip in port.fixed_ips:
+            fixed_ips.append(fixed_ip)
+
+    return fixed_ips
+
+def get_floating_ips(cloud: Connection, server_id: str) -> list:
+    """
+    Get the floating ips from a server
+    """
+
+    logger.info(f'Getting floating ips for server {server_id}')
+
+    server = get_server(cloud, server_id)
+    floating_ips = []
+
+    # Record floating IPs
+    for ip in cloud.list_floating_ips(filters={"port_details": {"device_id": server_id}}):
+        floating_ips.append({
+                             'port_id': ip['port_id'],
+                             'ip_id':   ip['id'],
+                             'ip_address': ip['floating_ip_address'],
+                             'fixed_ip_address': ip['fixed_ip_address'],
+                             'network_id': ip['port_details']['network_id'],
+        })
+
+    return floating_ips
+
+def recreate_ports(cloud: Connection, fixed_ips: list) -> list:
+    """
+    Recreate the ports with the original fixed IPs
+    """
+
+    new_port_ids = []
+    for fixed_ip in fixed_ips:
+        ports = cloud.network.ports()
+        port_exists = False
+        for port in ports:
+            for ip in port.fixed_ips:
+                if ip['subnet_id'] == fixed_ip['subnet_id'] and ip['ip_address'] == fixed_ip['ip_address']:
+                    port_exists = True
+                    new_port_ids.append(port.id)
+
+        if not port_exists:
+            port = cloud.network.create_port(
+                network_id=cloud.network.get_subnet(fixed_ip["subnet_id"]).network_id,
+                fixed_ips=[{"subnet_id": fixed_ip["subnet_id"], "ip_address": fixed_ip["ip_address"]}],
+            )
+            new_port_ids.append(port.id)
+
+    return new_port_ids
+
+def add_floating_ips_to_server(cloud: Connection, floating_ips: list, server_id: str) -> None:
+    """
+    Add floating ips to server
+    """
+
+    server = get_server(cloud, server_id)
+
+    for ip in floating_ips:
+        floating_ip = cloud.get_floating_ip(ip['ip_id'])
+
+        if floating_ip and floating_ip.status != "ACTIVE":
+            logger.info(f"Adding floating ip {ip['ip_address']} to server {server_id}")
+            cloud.compute.add_floating_ip_to_server(server, floating_ip, fixed_address=ip['fixed_ip_address'])
+
+            ports = list(cloud.network.ports(device_id=server.id))
+            for port in ports:
+                if port.network_id == ip['network_id']:
+                    # Attach the floating IP to the port
+                    floating_ip.port_id = port.id
+                    cloud.dns.update_floating_ip(floating_ip.id, port_id=port.id)
+            logger.warning(f"Attachment of floating ip {ip['ip_address']} may have failed, if so you must add it manually using the OpenStack CLI")
+
+        elif not floating_ip:
+            raise RuntimeError(f"Error restoring backup: floating IP {ip} not found")
 
 def stable_name(*parts: str) -> str:
     """
@@ -259,12 +357,12 @@ def ensure_volume_detached(cloud: Connection, volume: Volume, server_id: str) ->
         )
     return volume
 
-def ensure_volume_attached(cloud: Connection, volume: Volume, server_id: str, device: str) -> Volume:
+def ensure_volume_attached(cloud: Connection, volume_id: str, server_id: str, device: str) -> Volume:
     """
     Make sure the volume is attached
     """
 
-    volume = cloud.block_storage.get_volume(volume.id)
+    volume = cloud.block_storage.get_volume(volume_id)
     status = volume.status
     if status != "in-use":
         logger.info(f"Attaching volume {volume.name}.")
@@ -281,3 +379,29 @@ def ensure_volume_attached(cloud: Connection, volume: Volume, server_id: str, de
         )
     return volume
 
+def ensure_server_deleted(cloud: Connection, server_id: str):
+    """
+    Make sure the server is deleted
+    """
+
+    wait_for_status(lambda rid: find_server(cloud,rid), server_id, wanted=None, fail_states=["ACTIVE"], timeout=7200, interval=10, desc=f"delete server {server_id}")
+
+
+
+def delete_server(cloud: Connection, server_id: str) -> None:
+    """
+    Delete server
+    """
+
+    server = get_server(cloud, server_id)
+    ensure_server_stopped(cloud, server)
+
+    cloud.compute.delete_server(server_id)
+
+
+def delete_volume(cloud: Connection, volume_id: str) -> None:
+    """
+    Delete volume
+    """
+
+    cloud.block_storage.delete_volume(volume_id, wait=True)

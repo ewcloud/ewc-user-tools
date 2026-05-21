@@ -1,10 +1,12 @@
-cloud: cloud_00215
+cloud: cloud_081720
+authentication: clouds.yaml
+
 
 restore:
-- name: TestVM_Volume_1-d452ff49-6c16-4797-99b8-f3778d398ee3-backup-8e9157ca4b36
-  type: volume
+- name: 9b94f633-04e3-417e-9ad3-03f127008980
+  type: instance
   mode: backup
   in_place: false
-  new_name: TestVM_Volume_1_restored
-  #flavor: eo1.xsmall
-  #network: private
+  new_name: TestVM_restored
+  flavor: 1cpu-1gbmem
+  network: private
