@@ -104,9 +104,12 @@ def create_instance_backup(cloud: Connection, backup: dict) -> dict:
         # Now create an image from the server
         image_name = stable_name(server.name, server.id, "snapshot")
         logger.info(f'Creating backup of server {server.name}.')
-        image = cloud.compute.backup_server(server, image_name)
+        image = cloud.compute.backup_server(server, image_name, backup_type='daily', rotation=1)
 
         image_id = None
+        if image == None:
+            image = get_image(cloud, image_name)
+
         if isinstance(image, str):
             image_id = image
         elif isinstance(image, dict):
@@ -115,7 +118,7 @@ def create_instance_backup(cloud: Connection, backup: dict) -> dict:
             image_id = getattr(image, "id", None)
         
         if not image_id:
-            raise RuntimeError(f"Could not determine backup image id for {server.name}.")
+            raise RuntimeError(f"Could not determine backup id for {server.name}.")
 
         # Wait for image to be ready
         wait_for_status(lambda rid: cloud.compute.find_image(rid, ignore_missing=True),
