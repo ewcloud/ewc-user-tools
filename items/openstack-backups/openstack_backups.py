@@ -182,13 +182,13 @@ def authenticate(authentication: str) -> None:
 
         if "OS_AUTH_TYPE" in os.environ:
 
-            required_envs = ['OS_AUTH_TYPE', 'OS_AUTH_URL', 'OS_IDENTITY_API_VERSION', 'OS_REGION_NAME', 'OS_INTERFACE', 'OS_USERNAME', 'OS_USER_DOMAIN_NAME', 'OS_PROJECT_DOMAIN_ID', ]
+            required_envs = ['OS_AUTH_TYPE', 'OS_AUTH_URL', 'OS_IDENTITY_API_VERSION', 'OS_REGION_NAME', 'OS_INTERFACE']
 
             # Application credentials
             if os.getenv("OS_AUTH_TYPE") == "v3applicationcredential":
                 required_envs += ['OS_APPLICATION_CREDENTIAL_ID', 'OS_APPLICATION_CREDENTIAL_SECRET']
             elif os.getenv("OS_AUTH_TYPE") == "v3oidcpassword":
-                required_envs += ['OS_PASSWORD', 'OS_CLIENT_ID', 'OS_CLIENT_SECRET', 'OS_PROTOCOL', 'OS_IDENTITY_PROVIDER', 'OS_DISCOVERY_ENDPOINT']
+                required_envs += ['OS_USERNAME', 'OS_PASSWORD', 'OS_CLIENT_ID', 'OS_CLIENT_SECRET', 'OS_PROTOCOL', 'OS_IDENTITY_PROVIDER', 'OS_DISCOVERY_ENDPOINT', 'OS_USER_DOMAIN_NAME', 'OS_PROJECT_DOMAIN_ID']
             else:
                 raise RuntimeError(f'Authentication not possible. Unrecognised authentication type {os.getenv("OS_AUTH_TYPE")}')
 
