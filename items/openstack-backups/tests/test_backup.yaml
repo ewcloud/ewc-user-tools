@@ -11,6 +11,3 @@ backup:
     repeat_every: day
     retention_count: 5
   attachments: all
-  - name: TestVM_Volume
-    type: volume
-    mode: backup
