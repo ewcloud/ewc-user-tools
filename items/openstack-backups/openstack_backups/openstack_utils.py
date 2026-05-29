@@ -344,8 +344,9 @@ def ensure_server_ready(cloud: Connection, server: Server) -> Server:
 
     server = cloud.compute.get_server(server.id)
     status = server.status
-    if status != "ACTIVE" or status != "SHUTOFF" or task_state != "None":
-        while server.task_state != "None":
+    if (status != "ACTIVE" and status != "SHUTOFF") or server.task_state != None:
+        while server.task_state != None:
+            print(server.task_state)
             server = wait_for_status(
                 lambda rid: cloud.compute.get_server(rid),
                 server.id,
