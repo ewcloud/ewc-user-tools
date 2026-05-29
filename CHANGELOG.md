@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.1](https://github.com/ewcloud/ewc-user-tools/compare/1.0.0...1.0.1) (2026-05-29)
+
+
+### Bug Fixes
+
+* Default to app creds auth for openstack parallel migration ([2dd3442](https://github.com/ewcloud/ewc-user-tools/commit/2dd3442d5ac54642dfeb8d5bd4255bd53db5a2de))
+
 # 1.0.0 (2026-05-04)
 
 
