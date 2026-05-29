@@ -260,7 +260,7 @@ def stable_name(*parts: str) -> str:
 def wait_for_status(
     getter,
     resource_id: str,
-    wanted: str,
+    wanted: str | set[str],
     fail_states: set[str] | None = None,
     timeout: int = 3600,
     interval: int = 5,
@@ -274,11 +274,14 @@ def wait_for_status(
     start = time.time()
     last_heartbeat = 0
 
+    if isinstance(wanted, str):
+        wanted = [wanted]
+
     while True:
         obj = getter(resource_id)
         status = getattr(obj, "status", None) or getattr(obj, "state", None)
 
-        if status == wanted:
+        if status in wanted:
             return obj
 
         if fail_states and status in fail_states:
@@ -316,7 +319,7 @@ def ensure_server_stopped(cloud: Connection, server: Server) -> Server:
 
 def ensure_server_started(cloud: Connection, server: Server) -> Server:
     """
-    Make sure that server is started, an wait until it is
+    Make sure that server is started, and wait until it is
     """
     server = cloud.compute.get_server(server.id)
     status = server.status
@@ -332,6 +335,26 @@ def ensure_server_started(cloud: Connection, server: Server) -> Server:
             interval=10,
             desc=f"start server {server.id}",
         )
+    return server
+
+def ensure_server_ready(cloud: Connection, server: Server) -> Server:
+    """
+    Make sure that server is ready, i.e. not in the middle of a task
+    """
+
+    server = cloud.compute.get_server(server.id)
+    status = server.status
+    if status != "ACTIVE" or status != "SHUTOFF" or task_state != "None":
+        while server.task_state != "None":
+            server = wait_for_status(
+                lambda rid: cloud.compute.get_server(rid),
+                server.id,
+                wanted=["ACTIVE", "SHUTOFF"],
+                fail_states=["ERROR"],
+                timeout=3600,
+                interval=10,
+                desc=f"ready server {server.id}",
+            )
     return server
 
 def ensure_volume_detached(cloud: Connection, volume: Volume, server_id: str) -> Volume:

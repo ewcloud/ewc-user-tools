@@ -49,6 +49,9 @@ def create_instance_snapshot(cloud: Connection, backup: dict) -> dict:
                 timeout=7200, interval=10,  desc=f"create image {image_id}")
         logger.info(f"Snapshot created with id {image_id}")
 
+        # Wait for the server to be ready
+        ensure_server_ready(cloud, server)
+
         # If instance was shut down by us, start it again
         ensure_server_started(cloud, server)
 

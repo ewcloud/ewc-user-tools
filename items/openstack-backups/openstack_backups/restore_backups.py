@@ -221,7 +221,7 @@ def restore_instance_backup(cloud: Connection, restore: dict) -> dict:
         # If the restoration is in place, find the original server id and check if it still exists
         if restore['in_place']:
 
-            metadata = getattr(snapshot, "metadata", None)
+            metadata = getattr(backup, "metadata", None)
             if not metadata:
                 raise RuntimeError(f'Could not retrieve information from backup {name_or_id}.')
 
