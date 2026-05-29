@@ -124,8 +124,7 @@ As an example, to run the test configuration file provided in the `tests` direct
 python openstack_backups.py test/test_backup.yaml
 ```
 
-![Usage Example](https://raw.githubusercontent.com/ewcloud/ewc-user-tools/refs/heads/main/items/openstack-backups/images/Usage.webp)
-
+![Usage Example](https://github.com/ewcloud/ewc-user-tools/blob/ce799b24432479bacf3bd8479ba6b8cbb7ccb275/items/openstack-backups/images/Usage.webp)
 
 ### 4. (Optional) Running the container
 
