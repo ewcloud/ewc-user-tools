@@ -4,6 +4,11 @@ A script automating the process of copying resources (instances, volumes, and co
 
 # Functionality
 
+> ⛔ All Public IP addresses will be different on the target cloud (these cannot be migrated).
+
+> ⚠️ Migration of instances previously configured for `IPA/LDAP` or `SFS` operation is not supported.
+
+
 The script allows users with Openstack Application credentials as a default authentication method to create a clone of their instances, stream them to a new project / tenant without the need to download & upload images to & from the instance running the script, create needed volumes and launch the newly created instances with the same IP address and Security Groups as in the source project / tenant.
 
 
