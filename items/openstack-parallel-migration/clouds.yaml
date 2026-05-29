@@ -1,49 +1,53 @@
-clouds:
-  
+clouds:  
   # Used by openstacksdk for operations on source
-  # Update auth_url, username, password, project_name, domain names, and region_name according to your source cloud (e.g. CloudFerro WAW3-1).
+  # Recommended is usage of application credentials.
   source:
-    
     auth:
       auth_url: https://keystone.cloudferro.com:5000/v3
-      username: admin-eumetsat-sandbox
+      application_credential_id: 
+      application_credential_secret: 
+    regions:
+    - WAW3-1
+    interface: "public"
+    identity_api_version: 3
+    auth_type: "v3applicationcredential"
+  
+  # Alternatively, using password authentication
+  # Update auth_url, username, password, project_name, domain names, and region_name according to your source cloud (e.g. CloudFerro WAW3-1).
+  source_passauth:
+    auth:
+      auth_url: https://keystone.cloudferro.com:5000/v3
+      username: 
       password: 
-      project_name: cloud_00585_1
-      user_domain_name: cloud_00585
-      project_domain_name: cloud_00585
+      project_name: 
+      user_domain_name: 
+      project_domain_name: 
     region_name: WAW3-1
     interface: public
     identity_api_version: 3
-
-  # Used by openstacksdk for actual operations on target
-  # Update auth_url, project_name, project_domain_name, and region_name
+    
   target:
-    auth_type: v3token
     auth:
-      auth_url: https://keystone.cloud.central.data.destination-earth.eu:443/v3
-      project_name: bds-val
-      project_domain_name: EUMETSAT
-      token: ""   # script will set OS_TOKEN at runtime
-    region_name: DEDL-CENTRAL
-    interface: public
+      auth_url: https://keystone.api.r1.cloud.eumetsat.int
+      application_credential_id: 
+      application_credential_secret: 
+    regions:
+    - ECIS-R1
+    interface: "public"
     identity_api_version: 3
+    auth_type: "v3applicationcredential"
 
-
-  # Used ONLY to let the CLI obtain a token (script runs: openstack --os-cloud target_oidc token issue ...)
-  # Update username, password
-  target_oidc:
-    auth_type: v3oidcpassword
+  # Alternatively, using password authentication for target
+  # Update auth_url, username, password, project_name, domain names, and region_name according to your target cloud (e.g. CloudFerro ECIS R1).
+  target_passauth:
     auth:
-      auth_url: https://keystone.cloud.central.data.destination-earth.eu:443/v3
-      username: ahmed.naga@eumetsat.int
+      auth_url: https://keystone.api.r1.cloud.eumetsat.int
+      username: 
       password: 
-      project_name: bds-val
-      project_domain_name: EUMETSAT
-      identity_provider: dedl_openid_provider
-      protocol: openid
-      discovery_endpoint: https://identity.data.destination-earth.eu/auth/realms/dedl/.well-known/openid-configuration
-      client_id: openstack
-      client_secret: 
-    region_name: DEDL-CENTRAL
+      project_name: 
+      user_domain_name: Default
+      project_domain_name: Default
+    regions:
+    - ECIS-R1
     interface: public
     identity_api_version: 3
