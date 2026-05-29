@@ -54,13 +54,14 @@ def parse_config_file(config_file_path: str) -> dict:
             else:
                 raise RuntimeError(f'{yaml_error}: Cloud name missing.')
 
-            # Validate the authentication method (default clouds.yaml)
-            # FIXME: Currently the openrc method does not work, so force it to be clouds.yaml
-            #if "auth" in yaml_contents:
-            #    config['auth'] = yaml_contents['auth']
-            #else:
-            #    config['auth'] = 'openrc'
-            config['auth'] = 'clouds.yaml'
+
+            # Authentication method can be with Application Credentials from an OpenRC file or a clouds.yaml file
+            if 'authentication' not in yaml_contents:
+                raise RuntimeError(f'{yaml_error}: Missing application credentials. The entry \'authentication\' is required.')
+            elif yaml_contents['authentication'] not in ['openrc','clouds.yaml']:
+                raise RuntimeError(f'{yaml_error}: Unknown application credentials: The entry \'authentication\' should be either \'openrc\' or \'clouds.yaml\'.')
+            else:
+                config['authentication'] = yaml_contents['authentication']
 
             # Validate the backup entry
             if 'backup' in yaml_contents:
@@ -152,7 +153,6 @@ def parse_config_file(config_file_path: str) -> dict:
                     restore['in_place'] = restore.get('in_place', False)
 
                     # If the restoration is for an instance and not in place, one needs to provide flavor, network and (optionally) security groups
-                    # TODO: Might restore all networks later
                     if restore['type'] == 'instance' and not restore['in_place']:
                         if 'flavor' not in restore.keys():
                             raise RuntimeError(f'{yaml_error}: Restore entry missing flavor, required for non-in-place restorations.')
@@ -170,25 +170,86 @@ def parse_config_file(config_file_path: str) -> dict:
     else:
         raise FileNotFoundError('Backups config file not found.')
 
-def authenticate(auth: str) -> None:
+def authenticate(authentication: str) -> None:
     """
-    Ensure authentication credential are ready.
+    Ensure application credentials are ready.
     Two methods of authentication, with openrc file (pre-source) or clouds.yaml file
     """
 
-    if auth=="openrc":
-        # Check the appropriate environment variables have been set
-        #required_envs = ['OS_IDENTITY_API_VERSION', 'OS_AUTH_URL', 'OS_AUTH_TYPE', 'OS_USERNAME', 'OS_PASSWORD', 'OS_PROJECT_NAME', 'OS_PROJECT_DOMAIN_ID']
-        required_envs = ['OS_AUTH_URL', 'OS_INTERFACE', 'OS_IDENTITY_API_VERSION', 'OS_USERNAME', 'OS_REGION_NAME', 'OS_USER_DOMAIN_NAME', 'OS_PROJECT_DOMAIN_ID', 'OS_AUTH_TYPE', 'OS_APPLICATION_CREDENTIAL_ID', 'OS_APPLICATION_CREDENTIAL_SECRET']
+    if authentication=="openrc":
 
-        for env in required_envs:
-            if env not in os.environ:
-                raise RuntimeError(f'Authentication not possible. Environment variable {env} not set. Source the openrc file in order to set all required environment varibles')
+        # Check if authentication method uses application credentials of password
 
-    elif auth=='clouds.yaml':
+        if "OS_AUTH_TYPE" in os.environ:
+
+            required_envs = ['OS_AUTH_TYPE', 'OS_AUTH_URL', 'OS_IDENTITY_API_VERSION', 'OS_REGION_NAME', 'OS_INTERFACE']
+
+            # Application credentials
+            if os.getenv("OS_AUTH_TYPE") == "v3applicationcredential":
+                required_envs += ['OS_APPLICATION_CREDENTIAL_ID', 'OS_APPLICATION_CREDENTIAL_SECRET']
+            elif os.getenv("OS_AUTH_TYPE") == "v3oidcpassword":
+                required_envs += ['OS_USERNAME', 'OS_PASSWORD', 'OS_CLIENT_ID', 'OS_CLIENT_SECRET', 'OS_PROTOCOL', 'OS_IDENTITY_PROVIDER', 'OS_DISCOVERY_ENDPOINT']
+            else:
+                raise RuntimeError(f'Authentication not possible. Unrecognised authentication type {os.getenv("OS_AUTH_TYPE")}')
+
+            for env in required_envs:
+                if env not in os.environ:
+                    raise RuntimeError(f'Authentication not possible. Environment variable {env} not set. Source the openrc file in order to set all required environment varibles')
+
+        else:
+           raise RuntimeError(f'Authentication not possible. Environment variable {env} not set. Source the openrc file in order to set all required environment varibles')
+
+    elif authentication=='clouds.yaml':
+
         # Check the the appropriate clouds.yaml file exists in the current directory
+
         if not os.path.exists('clouds.yaml'):
             raise RuntimeError(f'Authentication not possible. Required file `clouds.yaml` not present in the current directory.')
+
+        # Check contents of clouds.yaml
+        with open("clouds.yaml", 'r') as f:
+
+            clouds_yaml = yaml.safe_load(f)
+
+            if 'clouds' not in clouds_yaml:
+                raise RuntimeError(f'Authentication not possible, missing `clouds` entry in `clouds.yaml` file.')
+
+            clouds = clouds_yaml['clouds']
+            if 'openstack' not in clouds:
+                raise RuntimeError(f'Authentication not possible, missing `openstack` entry in `clouds.yaml` file.')
+
+            openstack = clouds['openstack']
+
+            if 'auth_type' not in openstack:
+                raise RuntimeError(f'Authentication not possible, missing `auth_type` in `clouds.yaml` file.')
+
+            if 'auth' not in openstack:
+                raise RuntimeError(f'Authentication not possible, missing `auth` in `clouds.yaml` file.')
+
+            if openstack['auth_type'] == 'v3oidcpassword':
+
+                if 'auth_url' not in openstack['auth'] or \
+                   'username' not in openstack['auth'] or \
+                   'password' not in openstack['auth'] :
+                    raise RuntimeError(f'Authetication not possible, missing application credentials in `clouds.yaml` file.')
+
+            elif openstack['auth_type'] == 'v3applicationcredential':
+                if 'auth_url' not in openstack['auth'] or \
+                   'application_credential_id' not in openstack['auth'] or \
+                   'application_credential_secret' not in openstack['auth'] :
+                    raise RuntimeError(f'Authentication not possible, missing application credentials in `clouds.yaml` file.')
+
+            else:
+                raise RuntimeError(f'Authentication not possible, unrecognised authentication type {openstack["auth_type"]}.')
+
+            if 'regions' not in openstack and 'region' not in openstack and 'region_name' not in openstack:
+                raise RuntimeError(f'Authentication not possible, missing `region`, `regions` or `region_name` in `clouds.yaml` file.')
+
+            if 'interface' not in openstack:
+                raise RuntimeError(f'Authentication not possible, missing `interface` in `clouds.yaml` file.')
+
+            if 'identity_api_version' not in openstack:
+                raise RuntimeError(f'Authentication not possible, missing `identity_api_version` in `clouds.yaml` file.')
 
     else:
         raise RuntimeError(f'Authentication not possible. Unrecognised authentication metod.')
@@ -209,7 +270,7 @@ def main():
         config = parse_config_file(args.config_file_path)
 
         # Ensure authentication credentials are ready
-        authenticate(config['auth'])
+        authenticate(config['authentication'])
 
         # Connect to the cloud
         cloud = openstack_connect(config['cloud'])

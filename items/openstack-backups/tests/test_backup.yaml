@@ -1,19 +1,13 @@
-cloud: cloud_00215
+cloud: cloud_081720
+authentication: clouds.yaml
 
 backup:
 - name: TestVM
   type: instance
-  mode: snapshot  
-  stop: false
+  mode: snapshot
   scheduler:
     start: "2026-04-01, 00:00"
     end: "2026-04-05, 00:00"
     repeat_every: day
     retention_count: 5
-  attachments:
-  - name: TestVM_Volume_1
-    type: volume
-    mode: backup
-  - name: TestVM_Volume_2
-    type: volume
-    mode: snapshot
+  attachments: all

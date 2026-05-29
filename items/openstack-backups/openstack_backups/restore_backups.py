@@ -16,81 +16,383 @@ def restore_instance_snapshot(cloud: Connection, restore: dict) -> dict:
 
     name_or_id = restore['name'] if 'name' in restore.keys() else restore['id']
 
-    snapshot = get_image(cloud, name_or_id)
-    logger.info(f'Restoring instance snapshot {name_or_id}.')
+    # First check if the name or id is an image or a volume snapshot
+    if find_image(cloud, name_or_id):
 
-    # If the restoration is in place, find the original server id and check if it still exists
-    if restore['in_place']:
+        # There is an image with the given name or id, then it's a image-backed instance
 
-        metadata = getattr(snapshot, "metadata", None)
-        if not metadata:
-            raise RuntimeError(f'Could not retrieve information from snapshot {name_or_id}.')
+        snapshot = get_image(cloud, name_or_id)
 
-        instance_id = metadata.get("instance_uuid",None)
+        logger.info(f'Restoring image snapshot {name_or_id}.')
 
-        # Try to find server
-        server = cloud.compute.find_server(instance_id, ignore_missing=True)
-        if not server:
-            raise RuntimeError(f'Original instace not found, in-place restoration is impossible.')
-   
-        # For in-place restorations, ensure server is shutoff before
-        ensure_server_stopped(cloud, server)
+        # If the restoration is in place, find the original server id and check if it still exists
+        if restore['in_place']:
 
-        # Now rebuild the server
-        logger.info(f'In-place restoration of instance {server.name} with snapshot {name_or_id}.')
-        server = cloud.compute.rebuild_server(server.id, snapshot.id)
-        if not server:
-            raise RuntimeError(f'Error rebuilding instance.')
+            metadata = getattr(snapshot, "metadata", None)
+            if not metadata:
+                raise RuntimeError(f'Could not retrieve information from snapshot {name_or_id}.')
 
-        # Wait until the server is ready
-        wait_for_status(lambda rid: get_server(cloud, rid), server.id, wanted="SHUTOFF", fail_states=["ERROR"], timeout=7200, interval=10, desc=f"rebuild server {server.id}")
+            instance_id = metadata.get("instance_uuid",None)
 
-        # Restart server
-        ensure_server_started(cloud, server)
-        logger.info(f'Instance {server.name} successfully restored from snapshot.')
+            # Try to find server
+            server = cloud.compute.find_server(instance_id, ignore_missing=True)
+            if not server:
+                raise RuntimeError(f'Original instance not found, in-place restoration is impossible.')
+       
+            # For in-place restorations, ensure server is shutoff before
+            ensure_server_stopped(cloud, server)
 
-        # TODO: Maybe restore networks?
+            # Now rebuild the server
+            logger.info(f'In-place restoration of instance {server.name} with snapshot {name_or_id}.')
+            server = cloud.compute.rebuild_server(server.id, snapshot.id)
+            if not server:
+                raise RuntimeError(f'Error rebuilding instance.')
 
-        result = {
-            'instance_name': server.name, 
-            'instance_id': server.id, 
-            'snapshot_name': snapshot.name, 
-            'snapshot_id': snapshot.id
-         }
+            # Wait until the server is ready
+            wait_for_status(lambda rid: get_server(cloud, rid), server.id, wanted="SHUTOFF", fail_states=["ERROR"], timeout=7200, interval=10, desc=f"rebuild server {server.id}")
 
-    # If the restoration is not in place, create a new instance
-    else:
+            # Restart server
+            ensure_server_started(cloud, server)
+            logger.info(f'Instance {server.name} successfully restored from snapshot.')
 
-        # Get the new instance properties
-        if 'new_name' in restore:
-            server_name = restore['new_name']
+            result = {
+                'instance_name': server.name, 
+                'instance_id': server.id, 
+                'snapshot_name': snapshot.name, 
+                'snapshot_id': snapshot.id
+             }
+
+        # If the restoration is not in place, create a new instance
         else:
-            server_name = stable_name(snapshot.name, snapshot.id, 'restore')
-        flavor = cloud.get_flavor(restore['flavor'])
-        network = cloud.get_network(restore['network'])
 
-        # Create the new instance
-        logger.info(f'New copy restoration of snapshot {name_or_id} to instance {server_name}.')
-        server = cloud.compute.create_server(name=server_name, image_id=snapshot.id, flavor_id=flavor.id, networks=[{'uuid':network.id}], security_groups=restore['security_groups'])
-        if not server:
-            raise RuntimeError(f'Error creating instance from snapshot')
+            # Get the new instance properties
+            if 'new_name' in restore:
+                server_name = restore['new_name']
+            else:
+                server_name = stable_name(snapshot.name, snapshot.id, 'restore')
+            flavor = cloud.get_flavor(restore['flavor'])
+            network = cloud.get_network(restore['network'])
 
-        # Wait until the server is ready
-        wait_for_status(lambda rid: get_server(cloud,rid), server.id, wanted="ACTIVE", fail_states=["ERROR"], timeout=7200, interval=10, desc=f"create server {server.id}")
+            # Create the new instance
+            logger.info(f'New copy restoration of snapshot {name_or_id} to instance {server_name}.')
+            server = cloud.compute.create_server(name=server_name, image_id=snapshot.id, flavor_id=flavor.id, networks=[{'uuid':network.id}], security_groups=restore['security_groups'])
+            if not server:
+                raise RuntimeError(f'Error creating instance from snapshot')
 
-        logger.info(f'Instance {server.name} successfully restored from snapshot.')
+            # Wait until the server is ready
+            wait_for_status(lambda rid: get_server(cloud,rid), server.id, wanted="ACTIVE", fail_states=["ERROR"], timeout=7200, interval=10, desc=f"create server {server.id}")
 
-        # TODO: Maybe restore networks?
+            logger.info(f'Instance {server.name} successfully restored from snapshot.')
 
-        result = {
-            'instance_name': server.name, 
-            'instance_id': server.id, 
-            'snapshot_name': snapshot.name, 
-            'snapshot_id': snapshot.id
-         }
+            result = {
+                'instance_name': server.name, 
+                'instance_id': server.id, 
+                'snapshot_name': snapshot.name, 
+                'snapshot_id': snapshot.id
+             }
 
-    return result
+        return result
 
+    elif find_volume_snapshot(cloud, name_or_id):
+
+        # There is a volume snapshot with the given name or id, then it's a volume-backed instance
+
+        logger.info(f'Restoring root volume snapshot {name_or_id}.')
+
+        if restore['in_place']:
+
+            # If the restoration is in place, the volume can be restored in-place once the server is deleted, and then the server must be rebuilt
+            # Our version of OpenstackSDK does not support rebuilding servers with new root volumes, so we need to delete it and rebuild it
+
+            # First, if the original server does not exist anymore, restore in-place is not possible
+            snapshot = get_volume_snapshot(cloud, name_or_id)
+            volume = get_volume(cloud, snapshot['volume_id'])
+            if not volume['attachments']:
+                raise RuntimeError(f"The root volume of the original instance has no attachments. The original server does not exist and it cannot be restored in-place.")
+            server = get_server(cloud, volume['attachments'][0]['server_id'])
+            if snapshot is None or volume is None or server is None:
+                raise RuntimeError(f"Problem restoring snapshot, snapshot, volume or server can't be found")
+
+            logger.info(f'In-place restoration of instance {server.name} with volume snapshot {name_or_id}.')
+            logger.warning("In-place restoration of a volume-backed instance requires deleting the old VM and creating a new one with the restored root volume.")
+
+            # First get all the info from the server
+            server_name = getattr(server,"name")
+            server_id = getattr(server, "id")
+            flavor = getattr(server,"flavor")
+            networks = getattr(server, "addresses")
+            security_groups = getattr(server, "security_groups")
+            volumes = get_attachments(cloud, {"name": server.name, "type": "instance", "mode": "snapshot"})
+
+            # Get the fixed and floating ips for the new server
+            fixed_ips = get_fixed_ips(cloud, server_id)
+            floating_ips = get_floating_ips(cloud, server_id)
+
+            # Delete the server
+            logger.info(f"Deleting old server {server_name}")
+            delete_server(cloud, server_id)
+
+            # Wait until the server is deleted
+            ensure_server_deleted(cloud, server_id)
+
+            # Now restore the volume snapshot
+            result = restore_volume_snapshot(cloud, restore)
+
+            # Recreate fixed ips
+            ports = recreate_ports(cloud, fixed_ips)
+            port_ids = [{"port": port_id} for port_id in ports]
+
+            # Rebuild the server
+            logger.info(f'Creating new server {server_name}.')
+            server = cloud.compute.create_server(name=server_name, boot_volume=volume.id, block_device_mapping=[{"boot_index": 0,"uuid": volume.id,"source_type": "volume","destination_type": "volume","delete_on_termination": True}], flavor_id=flavor.id, networks=port_ids, security_groups=security_groups)
+
+            if not server:
+                raise RuntimeError(f'Error rebuilding instance.')
+
+            # Wait until the server is ready
+            wait_for_status(lambda rid: get_server(cloud,rid), server.id, wanted="ACTIVE", fail_states=["ERROR"], timeout=7200, interval=10, desc=f"create server {server.id}")
+
+            # Recreate floating ips
+            add_floating_ips_to_server(cloud, floating_ips, server.id)
+
+            # Reattach volumes
+            for attachment in volumes:
+                if not attachment["bootable"]:
+                    ensure_volume_attached(cloud, attachment["id"], server.id, attachment["device"])
+
+            logger.info(f'Instance {server.name} successfully restored from snapshot.')
+
+            result['instance_name'] =  server.name
+            result['instance_id'] =  server.id
+
+            return result
+        else:
+
+           # If the restoration is not in place, restore to a new volume and create a new instance
+
+            result = restore_volume_snapshot(cloud, restore)
+
+            # Get the new instance properties
+            if 'new_name' in restore:
+                server_name = restore['new_name']
+            else:
+                server_name = stable_name(snapshot.name, snapshot.id, 'restore')
+            flavor = cloud.get_flavor(restore['flavor'])
+            network = cloud.get_network(restore['network'])
+
+            volume = get_volume(cloud, result['volume_id'])
+
+            # Create the new instance
+            logger.info(f'New copy restoration of volume snapshot {name_or_id} to instance {server_name}.')
+            server = cloud.compute.create_server(name=server_name, boot_volume=volume.id, block_device_mapping=[{"boot_index": 0,"uuid": volume.id,"source_type": "volume","destination_type": "volume","delete_on_termination": True}], flavor_id=flavor.id, networks=[{'uuid':network.id}], security_groups=restore['security_groups'])
+            if not server:
+                raise RuntimeError(f'Error creating instance from snapshot')
+
+            # Wait until the server is ready
+            wait_for_status(lambda rid: get_server(cloud,rid), server.id, wanted="ACTIVE", fail_states=["ERROR"], timeout=7200, interval=10, desc=f"create server {server.id}")
+
+            logger.info(f'Instance {server.name} successfully restored from snapshot.')
+
+            result['instance_name'] =  server.name
+            result['instance_id'] =  server.id
+
+            return result
+
+    else:
+        raise RuntimeError(f'Resource to restore {name_or_id} is neither an image nor a volume snapshot')
+
+
+def restore_instance_backup(cloud: Connection, restore: dict) -> dict:
+    """
+    Restore a backup of an instance / server
+    """
+
+    name_or_id = restore['name'] if 'name' in restore.keys() else restore['id']
+
+    # First check if the name or id is an image or a volume backup
+    if find_image(cloud, name_or_id):
+
+        # There is an image with the given name or id, then it's a image-backed instance
+
+        backup = get_image(cloud, name_or_id)
+
+        logger.info(f'Restoring image backup {name_or_id}.')
+
+        # If the restoration is in place, find the original server id and check if it still exists
+        if restore['in_place']:
+
+            metadata = getattr(backup, "metadata", None)
+            if not metadata:
+                raise RuntimeError(f'Could not retrieve information from backup {name_or_id}.')
+
+            instance_id = metadata.get("instance_uuid",None)
+
+            # Try to find server
+            server = cloud.compute.find_server(instance_id, ignore_missing=True)
+            if not server:
+                raise RuntimeError(f'Original instance not found, in-place restoration is impossible.')
+       
+            # For in-place restorations, ensure server is shutoff before
+            ensure_server_stopped(cloud, server)
+
+            # Now rebuild the server
+            logger.info(f'In-place restoration of instance {server.name} with backup {name_or_id}.')
+            server = cloud.compute.rebuild_server(server.id, backup.id)
+            if not server:
+                raise RuntimeError(f'Error rebuilding instance.')
+
+            # Wait until the server is ready
+            wait_for_status(lambda rid: get_server(cloud, rid), server.id, wanted="SHUTOFF", fail_states=["ERROR"], timeout=7200, interval=10, desc=f"rebuild server {server.id}")
+
+            # Restart server
+            ensure_server_started(cloud, server)
+            logger.info(f'Instance {server.name} successfully restored from backup.')
+
+            result = {
+                'instance_name': server.name,
+                'instance_id': server.id,
+                'backup_name': backup.name,
+                'backup_id': backup.id
+             }
+
+        # If the restoration is not in place, create a new instance
+        else:
+
+            # Get the new instance properties
+            if 'new_name' in restore:
+                server_name = restore['new_name']
+            else:
+                server_name = stable_name(backup.name, backup.id, 'restore')
+            flavor = cloud.get_flavor(restore['flavor'])
+            network = cloud.get_network(restore['network'])
+
+            # Create the new instance
+            logger.info(f'New copy restoration of backup {name_or_id} to instance {server_name}.')
+            server = cloud.compute.create_server(name=server_name, image_id=backup.id, flavor_id=flavor.id, networks=[{'uuid':network.id}], security_groups=restore['security_groups'])
+            if not server:
+                raise RuntimeError(f'Error creating instance from bcakup')
+
+            # Wait until the server is ready
+            wait_for_status(lambda rid: get_server(cloud,rid), server.id, wanted="ACTIVE", fail_states=["ERROR"], timeout=7200, interval=10, desc=f"create server {server.id}")
+
+            logger.info(f'Instance {server.name} successfully restored from backup.')
+
+            result = {
+                'instance_name': server.name,
+                'instance_id': server.id,
+                'backup_name': backup.name,
+                'backup_id': backup.id
+             }
+
+        return result
+
+    elif find_volume_backup(cloud, name_or_id):
+
+        # There is a volume backup with the given name or id, then it's a volume-backed instance
+
+        logger.info(f'Restoring root volume backup {name_or_id}.')
+
+        if restore['in_place']:
+
+            # If the restoration is in place, the volume can be restored in-place once the server is deleted, and then the server must be rebuilt
+            # Our version of OpenstackSDK does not support rebuilding servers with new root volumes, so we need to delete it and rebuild it
+
+            # First, if the original server does not exist anymore, restore in-place is not possible
+            backup = get_volume_backup(cloud, name_or_id)
+            volume = get_volume(cloud, backup['volume_id'])
+            if not volume['attachments']:
+                raise RuntimeError(f"The root volume of the original instance has no attachments. The original server does not exist and it cannot be restored in-place.")
+            server = get_server(cloud, volume['attachments'][0]['server_id'])
+            if backup is None or volume is None or server is None:
+                raise RuntimeError(f"Problem restoring backup. Backup, volume or server can't be found")
+
+            logger.info(f'In-place restoration of instance {server.name} with volume backup {name_or_id}.')
+            logger.warning("In-place restoration of a volume-backed instance requires deleting the old VM and creating a new one with the restored root volume.")
+
+            # First get all the info from the server
+            server_name = getattr(server,"name")
+            server_id = getattr(server, "id")
+            flavor = getattr(server,"flavor")
+            networks = getattr(server, "addresses")
+            security_groups = getattr(server, "security_groups")
+            volumes = get_attachments(cloud, {"name": server.name, "type": "instance", "mode": "backup"})
+
+            # Get the fixed and floating ips for the new server
+            fixed_ips = get_fixed_ips(cloud, server_id)
+            floating_ips = get_floating_ips(cloud, server_id)
+
+            # Delete the server
+            logger.info(f"Deleting old server {server_name}")
+            delete_server(cloud, server_id)
+
+            # Wait until the server is deleted
+            ensure_server_deleted(cloud, server_id)
+
+            # Now restore the volume backup
+            result = restore_volume_backup(cloud, restore)
+
+            # Recreate fixed ips
+            ports = recreate_ports(cloud, fixed_ips)
+            port_ids = [{"port": port_id} for port_id in ports]
+
+            # Rebuild the server
+            logger.info(f'Creating new server {server_name}.')
+            server = cloud.compute.create_server(name=server_name, boot_volume=volume.id, block_device_mapping=[{"boot_index": 0,"uuid": volume.id,"source_type": "volume","destination_type": "volume","delete_on_termination": True}], flavor_id=flavor.id, networks=port_ids, security_groups=security_groups)
+
+            if not server:
+                raise RuntimeError(f'Error rebuilding instance.')
+
+            # Wait until the server is ready
+            wait_for_status(lambda rid: get_server(cloud,rid), server.id, wanted="ACTIVE", fail_states=["ERROR"], timeout=7200, interval=10, desc=f"create server {server.id}")
+
+            # Recreate floating ips
+            add_floating_ips_to_server(cloud, floating_ips, server.id)
+
+            # Reattach volumes
+            for attachment in volumes:
+                if not attachment["bootable"]:
+                    ensure_volume_attached(cloud, attachment["id"], server.id, attachment["device"])
+
+            logger.info(f'Instance {server.name} successfully restored from backup.')
+
+            result['instance_name'] =  server.name
+            result['instance_id'] =  server.id
+
+            return result
+        else:
+
+           # If the restoration is not in place, restore to a new volume and create a new instance
+
+            result = restore_volume_backup(cloud, restore)
+
+            # Get the new instance properties
+            if 'new_name' in restore:
+                server_name = restore['new_name']
+            else:
+                server_name = stable_name(backup.name, backup.id, 'restore')
+            flavor = cloud.get_flavor(restore['flavor'])
+            network = cloud.get_network(restore['network'])
+
+            volume = get_volume(cloud, result['volume_id'])
+
+            # Create the new instance
+            logger.info(f'New copy restoration of volume backup {name_or_id} to instance {server_name}.')
+            server = cloud.compute.create_server(name=server_name, boot_volume=volume.id, block_device_mapping=[{"boot_index": 0,"uuid": volume.id,"source_type": "volume","destination_type": "volume","delete_on_termination": True}], flavor_id=flavor.id, networks=[{'uuid':network.id}], security_groups=restore['security_groups'])
+            if not server:
+                raise RuntimeError(f'Error creating instance from backup')
+
+            # Wait until the server is ready
+            wait_for_status(lambda rid: get_server(cloud,rid), server.id, wanted="ACTIVE", fail_states=["ERROR"], timeout=7200, interval=10, desc=f"create server {server.id}")
+
+            logger.info(f'Instance {server.name} successfully restored from backup.')
+
+            result['instance_name'] =  server.name
+            result['instance_id'] =  server.id
+
+            return result
+
+    else:
+        raise RuntimeError(f'Resource to restore {name_or_id} is neither an image nor a volume backup')
 
 def restore_volume_snapshot(cloud: Connection, restore: dict) -> dict:
     """
@@ -106,13 +408,12 @@ def restore_volume_snapshot(cloud: Connection, restore: dict) -> dict:
     if restore['in_place']:
 
         volume_id = getattr(snapshot, 'volume_id', None)
-        print(volume_id)
         if not volume_id or not cloud.block_storage.find_volume(volume_id, ignore_missing=True):
             raise RuntimeError(f'Original volume not found, in-place restoration impossible.')
 
         volume = get_volume(cloud, volume_id)
 
-        # For in-place restorations, ensure volume is detached beforehand
+        # For in-place restorations of non-root volumes, ensure volume is detached beforehand
         attachments = getattr(volume, "attachments", [])
         for attachment in attachments:
             if "server_id" in attachment.keys():
@@ -128,7 +429,7 @@ def restore_volume_snapshot(cloud: Connection, restore: dict) -> dict:
         # Reattach volume if it was attached
         for attachment in attachments:
           if 'server_id' in attachment.keys():
-            ensure_volume_attached(cloud, volume, attachment['server_id'], attachment['device'])
+            ensure_volume_attached(cloud, volume.id, attachment['server_id'], attachment['device'])
         logger.info(f'Volume {volume.name} successfully restored from snapshot.')
 
         result = {
@@ -203,7 +504,7 @@ def restore_volume_backup(cloud: Connection, restore: dict) -> dict:
         # Reattach volume if it was attached
         for attachment in attachments:
           if 'server_id' in attachment.keys():
-            ensure_volume_attached(cloud, volume, attachment['server_id'], attachment['device'])
+            ensure_volume_attached(cloud, volume.id, attachment['server_id'], attachment['device'])
         logger.info(f'Volume {volume.name} successfully restored from backup.')
 
         result = {
@@ -268,6 +569,8 @@ def restore_backup(cloud: Connection, restore: dict) -> None:
 
     if type == 'instance' and mode == 'snapshot':
         result = [restore_instance_snapshot(cloud, restore)]
+    elif type == 'instance' and mode == 'backup':
+        result = [restore_instance_backup(cloud, restore)]
     elif type == 'volume' and mode == 'snapshot':
         result = [restore_volume_snapshot(cloud, restore)]
     elif type == 'volume' and mode == 'backup':

@@ -1,6 +1,6 @@
 # Automation of OpenStack backups
 
-The OpenStack Horizon UI allows the manual creation of backups and snapshots from individual instances and volumnes, but does not provide automation features for backing up or restoring multiple resources nor it offers options for the scheduling of backups. The OpenStack Command Line Interface (CLI) provides the same capabilities, without any automation features. The scheduling of backups using the OpenStack CLI must be done using `cron` jobs. Documentation on how to use the OpenStack CLI to create and schedule backups can be found [here](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+create+backups+from+VMs) and to restore backups [here](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+restore+backups+from+VMs). With this script, users can create, schedule or restore multiple backups automatically.
+The OpenStack Horizon UI allows the manual creation of backups and snapshots from individual instances and volumes, but does not provide automation features for backing up or restoring multiple resources nor it offers options for the scheduling of backups. The OpenStack Command Line Interface (CLI) provides the same capabilities, without any automation features. The scheduling of backups using the OpenStack CLI must be done using `cron` jobs. Documentation on how to use the OpenStack CLI to create and schedule backups can be found [here](https://confluence.ecmwf.int/x/OISnHg) and to restore backups [here](https://confluence.ecmwf.int/x/2ijPJQ). With this script, users can create, schedule or restore multiple backups automatically.
 
 ## Functionality
 This script automates the creation, restoration and scheduling of backups using the OpenStack SDK. This allows users with OpenStack credentials to create backups or snapshots of multiple instances and their attached volumes, scheduling backups for a future time with and without repetition and with and without a retention count. It also allows the restoration of multiple instances or volumes, in-place or to a new instance or volume.
@@ -17,39 +17,18 @@ OR
 * `docker>=29.1.3`
 
 ## Usage
-The script can be run either directly using the current python environment, satisfying the prerequisites above, or inside a docker container. In either case, it is necessary to first set up the authentication credentials file and the configuration file.
+The script can be run either directly using the current python environment, satisfying the prerequisites above, or inside a docker container. In either case, it is necessary to first set up the authentication credentials file and the configuration file. It is highly recommended not to run this script within the VM you wish to back up or restore.
 
-### 1. Authentication credentials
+### 1. Application credentials
 
-It is necessary to have the required OpenStack credentials to access the project/domain/cloud specified in the configuration file. The program expects a credentials file in the root directory called `clouds.yaml`, which contains the necessary information for authentication into the cloud. An example authentication file to acess in to `my_cloud` with `my_username` is
-```
-clouds:
-    my_cloud:
-        auth_type: v3oidcpassword
-        auth:
-            auth_url: https://keystone.cloudferro.com:5000/v3
-            username: my_username
-            password: my_password
-            project_id: my_project_id
-            project_name: my_project_name
-            project_domain_name: my_domain_name
-            project_domain_id: my_project_domain_id
-            client_id: openstack
-            client_secret: my_client_secret
-            protocol: openid
-            identity_provider: eumetsat_provider
-            discovery_endpoint: https://identity.cloudferro.com/auth/realms/Eumetsat-elasticity/.well-known/openid-configuration
-        region_name: WAW3-1
-        interface: public
-        identity_api_version: 3
-```
-The `clouds.yaml` file can be obtained from the cloud server provider or filled manually with the information in an OpenStack RC file. A template `clouds.yaml` file can be found in the `templates` directory.
+To run this script it is necessary to have the required OpenStack application credentials to access the project/domain/cloud specified in the configuration file. You can find information on how to create application credentials and obtain the RC file or clouds.yaml file in [here](https://confluence.ecmwf.int/x/U3AEJQ)
 
 ### 2. Configuration file
 
 A configuration YAML file that contains the requested information to create, schedule or restore backups is required to run the script. A template YAML file can be found in the `templates` directory and some examples in the `tests` directory. The structure of this configuration file is as follows
 ```
 cloud: <cloud_name>
+authentication: <credentials_method>
 
 backup:
 - name: <resource_name>
@@ -63,7 +42,7 @@ restore:
   mode: <backup_mode>
 - ...
 ```
-where the `<cloud_name>` corresponds to the name of cloud (domain name) to which the various resources belong. The optional `backup` node contains instructions to create and schedule backups, as explained below, and the optional `restore` node contains instructions to restore backups.
+where the `<cloud_name>` corresponds to the name of cloud (domain name) to which the various resources belong. The `authentication` node indicates the mode in which the credentials will be provided, which should be either `openrc` if the application credentials have been sourced from an OpenRC file, or `clouds.yaml` if the application credentials are stored in an eponymous file in the current directory. The optional `backup` node contains instructions to create and schedule backups, as explained below, and the optional `restore` node contains instructions to restore backups.
 
 
 #### 2.1 Creating backups
@@ -83,7 +62,7 @@ backup:
 - ...
 ```
 
-where `<resource_name>` is the name of the instance or volume to back up, `<resource_type>` is either `instance` or `volume` and `<backup_mode>` is either `snapshot` or `backup`. Any number of entries, corresponding to the resources to backup, can be provided to the `backup` node. By default, attachments are not backed up along with the resource. In order to back these up, one must provide the `attachment` field to the resource, as seen above. It is possible to select to backup all attachments of the resource, with `attachments: all`, or a specific set, by providing a list of the resources to backup. It is recommended to stop instances and detaching volumes before backing them up. This is the default behaviour. The options `stop` and `detach` can be supplied to instances and volumes, respectively, to change this default behaviour.
+where `<resource_name>` is the name of the instance or volume to back up, `<resource_type>` is either `instance` or `volume` and `<backup_mode>` is either `snapshot` or `backup`. Any number of entries, corresponding to the resources to backup, can be provided to the `backup` node. By default, attachments are not backed up along with the resource (with the exception of root volume of volume-backed instances). In order to back these up, one must provide the `attachment` field to the resource, as seen above. It is possible to select to backup all attachments of the resource, with `attachments: all`, or a specific set, by providing a list of the resources to backup. It is recommended to stop instances and detaching volumes before backing them up. This is the default behaviour. The options `stop` and `detach` can be supplied to instances and volumes, respectively, to change this default behaviour.
 
 #### 2.2 Scheduling backups
 
@@ -139,6 +118,14 @@ options:
   -h, --help        show this help message and exit
 ```
 
+As an example, to run the test configuration file provided in the `tests` directory, which schedules daily instance snapshots of a server called `TestVM`, do
+
+```
+python openstack_backups.py test/test_backup.yaml
+```
+
+![Usage Example](https://raw.githubusercontent.com/ewcloud/ewc-user-tools/refs/heads/main/items/openstack-backups/images/Usage.webp)
+
 ### 4. (Optional) Running the container
 
 Optionally, instead of running the script in a local python environment, it can be run within a docker container. These can be done, after preparing the custom `clouds.yaml` and configuration file, by following these steps:
@@ -176,9 +163,9 @@ The result of any operations performed by the script can be tested using the Ope
 
 ## Documentation
 
-* [How to request Openstack Application Credentials](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+request+Openstack+Application+Credentials)
-* [How to use the OpenStack CLI](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+Install+and+use+Command-Line+client)
-* [How to create a VM using the OpenStack CLI](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+create+a+VM+using+the+OpenStack+CLI)
-* [How to create backups from VMs and volumes](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+create+backups+from+VMs)
-* [How to restore backups from VMs and volumes](https://confluence.ecmwf.int/display/EWCLOUDKB/EWC+OpenStack+API+access+-+How+to+restore+backups+from+VMs)
+* [How to request Openstack Application Credentials](https://confluence.ecmwf.int/x/TiRNH)
+* [How to use the OpenStack CLI](https://confluence.ecmwf.int/x/TyRNH)
+* [How to create a VM using the OpenStack CLI](https://confluence.ecmwf.int/x/UiRNH)
+* [How to create backups from VMs and volumes](https://confluence.ecmwf.int/x/OISnHg)
+* [How to restore backups from VMs and volumes](https://confluence.ecmwf.int/x/2ijPJQ)
 
