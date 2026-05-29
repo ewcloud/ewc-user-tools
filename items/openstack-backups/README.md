@@ -118,6 +118,15 @@ options:
   -h, --help        show this help message and exit
 ```
 
+As an example, to run the test configuration file provided in the `tests` directory, which schedules daily instance snapshots of a server called `TestVM`, do
+
+```
+python openstack_backups.py test/test_backup.yaml
+```
+
+![Usage Example](https://raw.githubusercontent.com/ewcloud/ewc-user-tools/refs/heads/main/items/openstack-backups/images/Usage.webp)
+
+
 ### 4. (Optional) Running the container
 
 Optionally, instead of running the script in a local python environment, it can be run within a docker container. These can be done, after preparing the custom `clouds.yaml` and configuration file, by following these steps:
