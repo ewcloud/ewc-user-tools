@@ -223,14 +223,27 @@ def authenticate(authentication: str) -> None:
             if 'auth_type' not in openstack:
                 raise RuntimeError(f'Authentication not possible, missing `auth_type` in `clouds.yaml` file.')
 
-            if 'auth' not in openstack or  \
-               'auth_url' not in openstack['auth'] or \
-               'application_credential_id' not in openstack['auth'] or \
-               'application_credential_secret' not in openstack['auth'] :
-                    raise RuntimeError(f'Authenciation not possible, missing application credentials in `clouds.yaml` file.')
+            if 'auth' not in openstack:
+                raise RuntimeError(f'Authentication not possible, missing `auth` in `clouds.yaml` file.')
 
-            if 'regions' not in openstack:
-                raise RuntimeError(f'Authentication not possible, missing `region` in `clouds.yaml` file.')
+            if openstack['auth_type'] == 'v3oidcpassword':
+
+                if 'auth_url' not in openstack['auth'] or \
+                   'username' not in openstack['auth'] or \
+                   'password' not in openstack['auth'] :
+                    raise RuntimeError(f'Authetication not possible, missing application credentials in `clouds.yaml` file.')
+
+            elif openstack['auth_type'] == 'v3applicationcredential':
+                if 'auth_url' not in openstack['auth'] or \
+                   'application_credential_id' not in openstack['auth'] or \
+                   'application_credential_secret' not in openstack['auth'] :
+                    raise RuntimeError(f'Authentication not possible, missing application credentials in `clouds.yaml` file.')
+
+            else:
+                raise RuntimeError(f'Authentication not possible, unrecognised authentication type {openstack["auth_type"]}.')
+
+            if 'regions' not in openstack and 'region' not in openstack and 'region_name' not in openstack:
+                raise RuntimeError(f'Authentication not possible, missing `region`, `regions` or `region_name` in `clouds.yaml` file.')
 
             if 'interface' not in openstack:
                 raise RuntimeError(f'Authentication not possible, missing `interface` in `clouds.yaml` file.')
