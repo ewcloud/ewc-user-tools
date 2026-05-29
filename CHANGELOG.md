@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.0.2](https://github.com/ewcloud/ewc-user-tools/compare/1.0.1...1.0.2) (2026-05-29)
+
+
+### Bug Fixes
+
+* Use application credentials for openstack backups ([#5](https://github.com/ewcloud/ewc-user-tools/issues/5)) ([2ddf95f](https://github.com/ewcloud/ewc-user-tools/commit/2ddf95ffeafd921800b55a037ad09b326030cdf7))
+
 ## [1.0.1](https://github.com/ewcloud/ewc-user-tools/compare/1.0.0...1.0.1) (2026-05-29)
 
 
