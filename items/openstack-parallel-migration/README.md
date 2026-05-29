@@ -2,102 +2,26 @@
 
 A script automating the process of copying resources (instances, volumes, and configurations) from one OpenStack cloud to another. It is designed specifically for users of the [European Weather Cloud (EWC)](https://europeanweather.cloud/), supporting migrations with resume capabilities, parallel transfers (e.i. multiple simultaneous operations), and preservation of networking and security settings.
 
-## Features
+# Functionality
 
-* Performance-focused:
-  * Multiprocessing via `ProcessPoolExecutor` instead of `ThreadPoolExecutor`
-  * BufferedStream generator that coalesces source chunks into 4 MiB blocks
-  * RAW format for temporary volume-export images on the source cloud
-* Resume logic supported:
-  * If source temporary snapshot / clone volume / temp image already exists and is
-    not in error, reuse it on rerun and wait until it becomes usable.
-  * If source temporary resources are missing or in error, recreate them.
-  * If target image already exists and is usable, skip streaming and resume from
-    target volume creation.
-  * If target volume creation failed but target image succeeded, rerun resumes
-    target volume creation.
-  * If target server creation failed after the server was created, rerun resumes
-    from the existing target server.
-  * Source temporary resources are cleaned up after target image upload succeeds,
-    and also on rerun when a usable target image already exists.
-* CLI overrides:
-    * `--source CLOUD`
-    * `--target CLOUD`
-    * `--servers vm1 vm2 ...`
-    * `--parallel N`
-* Parallel instance migrations
-* Live phase-based progress bars
-* Per-server current stage tracking in separate state files
-* Glance HTTP streaming source -> target
-* Preserve fixed IPs by creating target ports with same fixed IPs on same-named target networks
-* Target is always boot-from-volume
-* Flavor mapping file support
-* Security groups reused by exact name on target, with source rules copied into them
-* Source workload support:
-    * Source instances booted from volume
-    * Source instances booted directly from image
-    * Attached data volumes in both cases
+The script allows users with Openstack Application credentials as a default authentication method to create a clone of their instances, stream them to a new project / tenant without the need to download & upload images to & from the instance running the script, create needed volumes and launch the newly created instances with the same IP address and Security Groups as in the source project / tenant.
+
 
 ## Prerequisites
 
 * Install [python](https://www.python.org/downloads) (version 3.12 or higher)
-* Install [pv](https://www.ivarch.com/programs/pv.shtml) (version 1.6.6)
-* Install [openstacksdk](https://docs.openstack.org/openstacksdk/latest/install/index.html) (version 4.9.0)
-* Install [PyYAML](https://pypi.org/project/PyYAML/) (version 6.0.3)
+* Install [pv](https://www.ivarch.com/programs/pv.shtml) (version 1.6.6 or higher)
+* Install [openstacksdk](https://docs.openstack.org/openstacksdk/latest/install/index.html) (version 4.9.0 or higher)
+* Install [PyYAML](https://pypi.org/project/PyYAML/) (version 6.0.3 or higher)
 
 
-## Usage
+# Usage
 
-### 1. Clone or download this repository.
-  ```bash
-  git clone https://github.com/ewcloud/ewc-user-tools.git
-```
-#### 1.1. Change to the specific Item's subdirectory
-  ```bash
-  cd ewc-user-tools/items/openstack-parallel-migrate
-  ```
-#### 1.2. (Optional) Checkout an specific Item's version
+The script is run directly using a python environment, satisfying the prerequisites above. It is necessary to first do the following:
+* Add the authentication credentials (default is Application Credentials) for the source and target cloud in a `clouds.yaml`.
+* Configure which instances to migrate, flavor mapping between the clouds (default is already configured for EWC migration), prefixes, or parallism in `migrate.yaml`.
+* Run script `openstack_parallel_migrate.py` script. Using switches overrides configuration in `migrate.yaml`.
 
-  > ⚠️ Make sure to replace `x.y.z` in the command below, with your version of preference.
-
-  ```bash
-  git checkout x.y.z
-  ```
-### 2. Update configuration files
-> ✅ See [Configuration](#configuration) section below for further details
-
-Modify the sample `clouds.yaml`  in your working directory with entries for your source and target clouds, and update the sample `migrate.yaml` file to specify which resources to migration.
-
-### 3. Run the migration
-
-#### 3.1. Basic run
-```bash
-python3 openstack_parallel_migrate.py
-```
-
-#### 3.2. Run overrides
-```bash
-python3 openstack_parallel_migrate.py \
-  --source CLOUD \
-  --target CLOUD \
-  --servers ahmedtst3 ahmedtst4 \
-  --parallel 2
-```
-
-
-## Configuration
-
-
-### Authentication and authorization
-
-The [clouds.yaml](./clouds.yaml) file contains authentication and connection details for your source and target OpenStack clouds. It is configuration file with standard structure, used by OpenStack SDK and the OpenStack CLI (see the [OpenStack's official documentation](https://docs.openstack.org/python-openstackclient/latest/configuration/index.html#clouds-yaml) for file structure details).
-
-### Source and target
-We rely on a configuration file with custom structure, to specify where the resources to be migrated are located, and where they should be copied over to. Checkout the attributes their descriptions in the sample [migrate.yaml](./migrate.yaml) file.
-
-### CLI arguments
-Arguments passed to the script at runtime override those in the static configuration files. To list available CLI
-arguments run
 
 ```bash
 python3 openstack_parallel_migrate.py -h
@@ -117,7 +41,23 @@ options:
                         Override servers list from migrate.yaml
   --parallel PARALLEL   Override parallel_streams from migrate.yaml
 ```
-## Output
+
+#### Run with configuration set in migrate.yaml
+```bash
+python3 openstack_parallel_migrate.py
+```
+
+#### Run with overrides
+```bash
+python3 openstack_parallel_migrate.py \
+  --source CLOUD \
+  --target CLOUD \
+  --servers Server1 Server2 \
+  --parallel 2
+```
+
+
+# Example Usage
 
 For an example run command such as:
 ```bash
@@ -226,3 +166,40 @@ ahmedtst4:phases: 100%|███████████████████
 [INFO] ahmedtst3: migration completed
 ahmedtst3:phases: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 10/10 [11:37<00:00, 69.72s/it]
 ```
+
+
+## Features
+
+* Performance-focused:
+  * BufferedStream generator that coalesces source chunks into 4 MiB blocks
+  * RAW format for temporary volume-export images on the source cloud
+* Resume logic supported:
+  * If source temporary snapshot / clone volume / temp image already exists and is
+    not in error, reuse it on rerun and wait until it becomes usable.
+  * If source temporary resources are missing or in error, recreate them.
+  * If target image already exists and is usable, skip streaming and resume from
+    target volume creation.
+  * If target volume creation failed but target image succeeded, rerun resumes
+    target volume creation.
+  * If target server creation failed after the server was created, rerun resumes
+    from the existing target server.
+  * Source temporary resources are cleaned up after target image upload succeeds,
+    and also on rerun when a usable target image already exists.
+* CLI overrides:
+    * `--source CLOUD`
+    * `--target CLOUD`
+    * `--servers vm1 vm2 ...`
+    * `--parallel N`
+* Parallel instance migrations
+* Live phase-based progress bars
+* Per-server current stage tracking in separate state files
+* Glance HTTP streaming source -> target
+* Preserve fixed IPs by creating target ports with same fixed IPs on same-named target networks
+* Target is always boot-from-volume
+* Flavor mapping file support
+* Security groups reused by exact name on target, with source rules copied into them
+* Source workload support:
+    * Source instances booted from volume
+    * Source instances booted directly from image
+    * Attached data volumes in both cases
+
