@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.1.0](https://github.com/ewcloud/ewc-user-tools/compare/1.0.2...1.1.0) (2026-06-11)
+
+
+### Features
+
+* updated flavor-map.yml with old to new EWC cloud mapping ([5b39d0c](https://github.com/ewcloud/ewc-user-tools/commit/5b39d0c029aca358345bc41d2eaad31d336fc3fa))
+
 ## [1.0.2](https://github.com/ewcloud/ewc-user-tools/compare/1.0.1...1.0.2) (2026-05-29)
 
 
