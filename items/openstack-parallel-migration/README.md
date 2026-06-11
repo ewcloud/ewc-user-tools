@@ -6,7 +6,7 @@ A script automating the process of copying resources (instances, volumes, and co
 
 > ⛔ All Public IP addresses will be different on the target cloud (these cannot be migrated).
 
-> ⚠️ Migration of instances previously configured for `IPA/LDAP` or `SFS` operation is not supported.
+> ⚠️ Migration of instances previously configured for `SFS` operation is not supported.
 
 
 The script allows users with Openstack Application credentials as a default authentication method to create a clone of their instances, stream them to a new project / tenant without the need to download & upload images to & from the instance running the script, create needed volumes and launch the newly created instances with the same IP address and Security Groups as in the source project / tenant.
@@ -18,6 +18,7 @@ The script allows users with Openstack Application credentials as a default auth
 * Install [pv](https://www.ivarch.com/programs/pv.shtml) (version 1.6.6 or higher)
 * Install [openstacksdk](https://docs.openstack.org/openstacksdk/latest/install/index.html) (version 4.9.0 or higher)
 * Install [PyYAML](https://pypi.org/project/PyYAML/) (version 6.0.3 or higher)
+* Install [uv](https://docs.astral.sh/uv/) (0.10.12 or higher)
 
 
 # Usage
@@ -27,9 +28,12 @@ The script is run directly using a python environment, satisfying the prerequisi
 * Configure which instances to migrate, flavor mapping between the clouds (default is already configured for EWC migration), prefixes, or parallism in `migrate.yaml`.
 * Run script `openstack_parallel_migrate.py` script. Using switches overrides configuration in `migrate.yaml`.
 
+```bash
+uv sync
+```
 
 ```bash
-python3 openstack_parallel_migrate.py -h
+uv run python openstack_parallel_migrate.py -h
 ```
 
 ```
@@ -49,12 +53,12 @@ options:
 
 #### Run with configuration set in migrate.yaml
 ```bash
-python3 openstack_parallel_migrate.py
+uv run python openstack_parallel_migrate.py
 ```
 
 #### Run with overrides
 ```bash
-python3 openstack_parallel_migrate.py \
+uv run python openstack_parallel_migrate.py \
   --source CLOUD \
   --target CLOUD \
   --servers Server1 Server2 \
