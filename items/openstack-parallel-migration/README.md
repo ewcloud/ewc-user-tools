@@ -14,24 +14,20 @@ The script allows users with Openstack Application credentials as a default auth
 
 ## Prerequisites
 
-* Install [python](https://www.python.org/downloads) (version 3.12 or higher)
 * Install [pv](https://www.ivarch.com/programs/pv.shtml) (version 1.6.6 or higher)
+* * Install [uv](https://docs.astral.sh/uv/) (0.10.12 or higher)
+
+* Install [python](https://www.python.org/downloads) (version 3.12 or higher)
 * Install [openstacksdk](https://docs.openstack.org/openstacksdk/latest/install/index.html) (version 4.9.0 or higher)
 * Install [PyYAML](https://pypi.org/project/PyYAML/) (version 6.0.3 or higher)
 * Install [tqdm](https://pypi.org/project/tqdm/)(version 4.68.3 or higher )
 
-# Installation
-
-Install uv: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+# Set up environment
 
 Once in the repository, run the following to start the environment
 ```
 uv sync
 ```
-
-Now you are ready to run migrations using the python files
-
-uv run python3 PYTHON_FILE
 
 # Usage
 
@@ -42,7 +38,7 @@ The script is run directly using a python environment, satisfying the prerequisi
 
 
 ```bash
-python3 openstack_parallel_migrate.py -h
+uv run python3 openstack_parallel_migrate.py -h
 ```
 
 ```
@@ -62,12 +58,12 @@ options:
 
 #### Run with configuration set in migrate.yaml
 ```bash
-python3 openstack_parallel_migrate.py
+uv run python3 openstack_parallel_migrate.py
 ```
 
 #### Run with overrides
 ```bash
-python3 openstack_parallel_migrate.py \
+uv run python3 openstack_parallel_migrate.py \
   --source CLOUD \
   --target CLOUD \
   --servers Server1 Server2 \
@@ -79,7 +75,7 @@ python3 openstack_parallel_migrate.py \
 
 For an example run command such as:
 ```bash
-python3 openstack_parallel_migrate_curl.py --source source --target target_oidc --servers ahmedtst3 ahmedtst4
+uv run python3 openstack_parallel_migrate_curl.py --source source --target target_oidc --servers ahmedtst3 ahmedtst4
 ```
 
 The expected output would be:
