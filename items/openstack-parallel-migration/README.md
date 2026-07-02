@@ -18,7 +18,20 @@ The script allows users with Openstack Application credentials as a default auth
 * Install [pv](https://www.ivarch.com/programs/pv.shtml) (version 1.6.6 or higher)
 * Install [openstacksdk](https://docs.openstack.org/openstacksdk/latest/install/index.html) (version 4.9.0 or higher)
 * Install [PyYAML](https://pypi.org/project/PyYAML/) (version 6.0.3 or higher)
+* Install [tqdm](https://pypi.org/project/tqdm/)(version 4.68.3 or higher )
 
+# Installation
+
+Install uv: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+
+Once in the repository, run the following to start the environment
+```
+uv sync
+```
+
+Now you are ready to run migrations using the python files
+
+uv run python3 PYTHON_FILE
 
 # Usage
 
