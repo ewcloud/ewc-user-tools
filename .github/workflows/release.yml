@@ -13,11 +13,20 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
+
     steps:
+      - name: Generate token for EWC Semantic Releaser GitHub App
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.EWC_SEMANTIC_RELEASES_CLIENT_ID }}
+          private-key: ${{ secrets.EWC_SEMANTIC_RELEASES_PRIVATE_KEY }}
+    
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -28,9 +37,10 @@ jobs:
         run: npm ci
 
       - name: Verify dependency signatures
-        run: npm audit signatures || echo "Some dependency signatures could not be verified!"
+        run: npm audit signatures || echo "::warning::Some dependency signatures could not be verified!"
 
       - name: Run semantic-release
         run: npx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+
