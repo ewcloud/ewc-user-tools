@@ -1,0 +1,16 @@
+---
+- name: Resolve reconciled user context for user {{ user.username }}
+  ansible.builtin.set_fact:
+    current_user_context: "{{ reconciled_users[tenant.name ~ '/' ~ user.username] }}"
+
+- name: Assign roles to user {{ user.username }}
+  community.general.keycloak_user_rolemapping:
+    auth_keycloak_url: "https://{{ iam_ingress_hostname }}"
+    auth_realm: "{{ tenant.name }}"
+    auth_username: "{{ iam_tenant_admin_username }}"
+    auth_password: "{{ iam_tenant_admin_password }}"
+    realm: "{{ tenant.name }}"
+    uid: "{{ current_user_context.user_id }}"
+    roles: "{{ user.roles }}"
+    state: present
+    validate_certs: true

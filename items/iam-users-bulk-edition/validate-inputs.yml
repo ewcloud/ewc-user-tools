@@ -1,0 +1,27 @@
+- name: Input configuration loading and validation playbook
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Detect if input vars were already included
+      set_fact:
+        has_loaded_tenants_vars: "{{ tenants is defined and tenants.keys() | length > 0 }}"
+
+    - name: Include vars of tenants.yaml containing Realms and clients (if not included already)
+      ansible.builtin.include_vars:
+        file: ./templates/tenants.yml
+        name: tenants
+      when: not has_loaded_tenants_vars
+
+    - name: Validate included vars (if not validated already)
+      ansible.utils.validate:
+        data: "{{ tenants }}"
+        criteria:
+          - "{{ lookup('file',  './templates/tenants.schema.json') | from_json }}"
+        engine: ansible.utils.jsonschema
+      when: not has_loaded_tenants_vars
+
+    - name: Extract attributes from key at the root of the schema
+      set_fact:
+        tenants: "{{ tenants.tenants }}"

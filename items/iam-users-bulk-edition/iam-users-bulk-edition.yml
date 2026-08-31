@@ -1,0 +1,10 @@
+- name: Keycloak configuration playbook
+  hosts: localhost
+  connection: local
+
+# Input loading and validation for keycloak configuration and Real creation
+- import_playbook: validate-inputs.yml
+
+# Routines for IAM use bulk edition
+- import_playbook: add-users.yml
+  when: tenants | length > 0

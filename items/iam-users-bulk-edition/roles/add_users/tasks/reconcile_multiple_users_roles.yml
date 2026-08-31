@@ -1,0 +1,7 @@
+---
+- name: Reconcile roles for users in realm {{ tenant.name }}
+  ansible.builtin.include_tasks: reconcile_single_user_roles.yml
+  loop: "{{ tenant.users }}"
+  loop_control:
+    loop_var: user
+    label: "{{ user.username }}"
