@@ -1,5 +1,5 @@
 ---
-tenant:
+tenants:
   - name: joro-test-realm
     users:
       - username: jorge.loaicigarodriguez

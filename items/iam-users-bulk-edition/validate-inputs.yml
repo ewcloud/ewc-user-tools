@@ -10,7 +10,7 @@
 
     - name: Include vars of tenants.yaml containing Realms and clients (if not included already)
       ansible.builtin.include_vars:
-        file: ./templates/tenants.yml
+        file: ./vars/inputs.yml
         name: tenants
       when: not has_loaded_tenants_vars
 
@@ -18,7 +18,7 @@
       ansible.utils.validate:
         data: "{{ tenants }}"
         criteria:
-          - "{{ lookup('file',  './templates/tenants.schema.json') | from_json }}"
+          - "{{ lookup('file',  './vars/inputs.schema.json') | from_json }}"
         engine: ansible.utils.jsonschema
       when: not has_loaded_tenants_vars
 
