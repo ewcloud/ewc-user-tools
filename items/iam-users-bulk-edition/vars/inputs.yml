@@ -1,14 +1,14 @@
 ---
-tenants:
-  - name: joro-test-realm
-    users:
-      - username: jorge.loaicigarodriguez
-        email: Jorge.LoaicigaRodriguez@external.eumetsat.int
-        first_name: Jorge
-        last_name: Loaiciga
-        enabled: true
-        attributes:
-          training_session_id: "12345"
-        roles:
-          - name: ewc-iam-user
-          - name: ewc-app-user
+tenancy:
+  name: joro-test-realm
+  users:
+    - username: jorge.loaicigarodriguez
+      email: Jorge.LoaicigaRodriguez@external.eumetsat.int
+      first_name: Jorge
+      last_name: Loaiciga
+      enabled: true
+      attributes:
+        training_session_id: "12345"
+      roles:
+        - name: ewc-iam-user
+        - name: ewc-app-user

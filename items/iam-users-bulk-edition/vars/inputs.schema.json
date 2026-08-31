@@ -3,82 +3,79 @@
   "$id": "https://github.com/ewcloud/ewc-user-tools/items/iam-users-bulk-edit/templates/tenants.schema.json",
   "type": "object",
   "properties": {
-    "tenants": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "pattern": "^([a-z0-9-]{2,36})$"
-          },
-          "users": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "username": {
-                  "type": "string"
+    "tenancy": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^([a-z0-9-]{2,36})$"
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "first_name": {
+                "type": "string"
+              },
+              "last_name": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "attributes": {
+                "type": "object",
+                "properties": {
+                  "training_session_id": {
+                    "type": "string"
+                  }
                 },
-                "email": {
-                  "type": "string"
-                },
-                "first_name": {
-                  "type": "string"
-                },
-                "last_name": {
-                  "type": "string"
-                },
-                "enabled": {
-                  "type": "boolean"
-                },
-                "attributes": {
+                "required": [
+                  "training_session_id"
+                ]
+              },
+              "roles": {
+                "type": "array",
+                "items": {
                   "type": "object",
                   "properties": {
-                    "training_session_id": {
+                    "name": {
                       "type": "string"
                     }
                   },
                   "required": [
-                    "training_session_id"
+                    "name"
                   ]
-                },
-                "roles": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "name": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "name"
-                    ]
-                  }
                 }
-              },
-              "required": [
-                "username",
-                "email",
-                "first_name",
-                "last_name",
-                "enabled",
-                "attributes",
-                "roles"
-              ]
-            }
+              }
+            },
+            "required": [
+              "username",
+              "email",
+              "first_name",
+              "last_name",
+              "enabled",
+              "attributes",
+              "roles"
+            ]
           }
-        },
-        "required": [
-          "name"
-        ],
-        "additionalProperties": false
-      }
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [
-    "tenants"
+    "tenancy"
   ],
   "additionalProperties": false
 }
