@@ -1,14 +1,54 @@
 ---
+schema_version: 1
 tenancy:
-  name: joro-test-realm
+
+  # --- Tenancy Spec ---
+  name: my-test-realm
+
+  # --- User Spec ---
   users:
-    - username: jorge.loaicigarodriguez
-      email: Jorge.LoaicigaRodriguez@external.eumetsat.int
-      first_name: Jorge
-      last_name: Loaiciga
+    - username: john.smith
+      state: present
+      email: John.Smith@example.com
+      first_name: John 
+      last_name: Smith
       enabled: true
       attributes:
-        training_session_id: "12345"
+        training_session_ids:
+          - "12345"
       roles:
-        - name: ewc-iam-user
-        - name: ewc-app-user
+        - name: iam-user
+        - name: app-user
+
+    - username: jane.doe
+      state: present
+      email: Jane.Doe@example.com
+      attributes:
+        training_session_ids:
+          - "12345"
+          - "67890"
+      roles:
+        - name: iam-user
+        - name: app-user
+
+    - username: ada.jameson
+      email: Ada.Jameson@example.com
+      state: present
+      enabled: false
+
+    - username: carlos.perez
+      email: Carlos.Perez@example.com
+      state: absent
+      deletion_protection: false
+
+  # --- Defaults ---
+  # Apply to every user unless overridden per-user within users section
+  defaults:  
+    deletion_protection: true  # Safety switch; must be true for any `state: absent` to be enforced.
+    enabled: true
+    email_verified: true
+    required_actions:
+      - UPDATE_PASSWORD     # UPDATE_PASSWORD OR VERIFY_EMAIL...
+    attributes_mode: merge  # merge OR replace
+    roles_mode: merge       # merge OR replace
+

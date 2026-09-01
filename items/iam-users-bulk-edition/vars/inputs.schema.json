@@ -1,14 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/ewcloud/ewc-user-tools/items/iam-users-bulk-edit/templates/tenants.schema.json",
+  "$id": "https://raw.githubusercontent.com/ewcloud/ewc-user-tools/refs/heads/main/items/iam-users-bulk-edit/vars/inputs.schema.json",
+  "title": "IAM User Bulk Edition Input Configuration Schema",
+  "$comment": "Auto-generated with https://openformatter.com/json-to-json-schema",
   "type": "object",
   "properties": {
+    "schema_version": {
+      "type": "integer"
+    },
     "tenancy": {
       "type": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "pattern": "^([a-z0-9-]{2,36})$"
+          "type": "string"
         },
         "users": {
           "type": "array",
@@ -17,6 +21,10 @@
             "properties": {
               "username": {
                 "type": "string"
+              },
+              "state": {
+                "type": "string",
+                "enum": ["present", "absent"]
               },
               "email": {
                 "type": "string"
@@ -33,13 +41,13 @@
               "attributes": {
                 "type": "object",
                 "properties": {
-                  "training_session_id": {
-                    "type": "string"
+                  "training_session_ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
                   }
-                },
-                "required": [
-                  "training_session_id"
-                ]
+                }
               },
               "roles": {
                 "type": "array",
@@ -58,24 +66,57 @@
             },
             "required": [
               "username",
-              "email",
-              "first_name",
-              "last_name",
-              "enabled",
-              "attributes",
-              "roles"
+              "state",
+              "email"
             ]
           }
+        },
+        "defaults": {
+          "type": "object",
+          "properties": {
+            "deletion_protection": {
+              "type": "boolean"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "email_verified": {
+              "type": "boolean"
+            },
+            "required_actions": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["UPDATE_PASSWORD", "VERIFY_EMAIL", "UPDATE_PROFILE", "CONFIGURE_TOTP", "TERMS_AND_CONDITIONS"]
+              }
+            },
+            "attributes_mode": {
+              "type": "string",
+              "enum": ["merge", "replace"]
+            },
+            "roles_mode": {
+              "type": "string",
+              "enum": ["merge", "replace"]
+            }
+          },
+          "required": [
+            "enabled",
+            "email_verified",
+            "required_actions",
+            "attributes_mode",
+            "roles_mode"
+          ]
         }
       },
       "required": [
-        "name"
-      ],
-      "additionalProperties": false
+        "name",
+        "users",
+        "defaults"
+      ]
     }
   },
   "required": [
+    "schema_version",
     "tenancy"
-  ],
-  "additionalProperties": false
+  ]
 }
