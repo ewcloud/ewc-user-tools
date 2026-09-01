@@ -10,7 +10,7 @@ tenancy:
     - username: john.smith
       state: present
       email: John.Smith@example.com
-      first_name: John 
+      first_name: John
       last_name: Smith
       enabled: true
       roles:
@@ -37,7 +37,7 @@ tenancy:
 
   # --- Defaults ---
   # NOTE: apply to every user unless overridden per-user within users section
-  defaults:  
+  defaults:
     deletion_protection: true # Safety switch; must be true for any `state: absent` to be enforced.
     enabled: true
     email_verified: true
