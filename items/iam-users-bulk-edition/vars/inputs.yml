@@ -13,23 +13,17 @@ tenancy:
       first_name: John 
       last_name: Smith
       enabled: true
-      attributes:
-        training_session_ids:
-          - "12345"
       roles:
-        - name: iam-user
-        - name: app-user
+        - name: ewc-iam-user
+        - name: ewc-jhub-training-f7983a-attendee
 
     - username: jane.doe
       state: present
       email: Jane.Doe@example.com
-      attributes:
-        training_session_ids:
-          - "12345"
-          - "67890"
       roles:
-        - name: iam-user
-        - name: app-user
+        - name: ewc-iam-user
+        - name: ewc-jhub-training-f7983a-attendee
+        - name: ewc-jhub-training-d3d5d9-attendee
 
     - username: ada.jameson
       email: Ada.Jameson@example.com
@@ -42,13 +36,11 @@ tenancy:
       deletion_protection: false
 
   # --- Defaults ---
-  # Apply to every user unless overridden per-user within users section
+  # NOTE: apply to every user unless overridden per-user within users section
   defaults:  
-    deletion_protection: true  # Safety switch; must be true for any `state: absent` to be enforced.
+    deletion_protection: true # Safety switch; must be true for any `state: absent` to be enforced.
     enabled: true
     email_verified: true
     required_actions:
-      - UPDATE_PASSWORD     # UPDATE_PASSWORD OR VERIFY_EMAIL...
-    attributes_mode: merge  # merge OR replace
-    roles_mode: merge       # merge OR replace
-
+      - UPDATE_PASSWORD
+    roles_mode: merge

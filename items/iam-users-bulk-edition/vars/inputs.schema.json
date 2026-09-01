@@ -38,30 +38,21 @@
               "enabled": {
                 "type": "boolean"
               },
-              "attributes": {
-                "type": "object",
-                "properties": {
-                  "training_session_ids": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                }
-              },
               "roles": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
                     "name": {
-                      "type": "string"
+                      "type": "string",
+                      "pattern": "ewc-jhub-training-[0-9a-z]{6}-attendee|ewc-iam-.*|ewc-app.*"
                     }
                   },
                   "required": [
                     "name"
                   ]
-                }
+                },
+                "uniqueItems": true
               }
             },
             "required": [
@@ -69,7 +60,8 @@
               "state",
               "email"
             ]
-          }
+          },
+          "uniqueItems": true
         },
         "defaults": {
           "type": "object",
@@ -88,11 +80,8 @@
               "items": {
                 "type": "string",
                 "enum": ["UPDATE_PASSWORD", "VERIFY_EMAIL", "UPDATE_PROFILE", "CONFIGURE_TOTP", "TERMS_AND_CONDITIONS"]
-              }
-            },
-            "attributes_mode": {
-              "type": "string",
-              "enum": ["merge", "replace"]
+              },
+              "uniqueItems": true
             },
             "roles_mode": {
               "type": "string",
@@ -103,7 +92,6 @@
             "enabled",
             "email_verified",
             "required_actions",
-            "attributes_mode",
             "roles_mode"
           ]
         }
