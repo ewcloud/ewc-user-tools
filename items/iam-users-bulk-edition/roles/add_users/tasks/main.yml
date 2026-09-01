@@ -1,21 +1,9 @@
 ---
 - name: Reconcile users
   ansible.builtin.include_tasks: reconcile_multiple_users.yml
-  loop: "{{ tenants }}"
-  loop_control:
-    loop_var: tenant
-    label: "{{ tenant.name }}"
 
 - name: Reconcile roles for users
   ansible.builtin.include_tasks: reconcile_multiple_users_roles.yml
-  loop: "{{ tenants }}"
-  loop_control:
-    loop_var: tenant
-    label: "{{ tenant.name }}"
 
 - name: Process credential reset and email notifications
   ansible.builtin.include_tasks: process_multiple_users_credentials.yml
-  loop: "{{ tenants }}"
-  loop_control:
-    loop_var: tenant
-    label: "{{ tenant.name }}"

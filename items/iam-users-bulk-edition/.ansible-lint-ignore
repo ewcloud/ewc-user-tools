@@ -1,0 +1,6 @@
+roles/add_users/tasks/reconcile_single_user.yml var-naming[no-role-prefix]
+roles/add_users/vars/main.yml var-naming[no-role-prefix]
+roles/add_users/tasks/reconcile_single_user_roles.yml var-naming[no-role-prefix]
+roles/add_users/defaults/main.yml var-naming[no-role-prefix]
+roles/add_users/tasks/process_single_user_credentials.yml var-naming[no-role-prefix]
+roles/add_users/tasks/reconcile_single_user.yml yaml[line-length]

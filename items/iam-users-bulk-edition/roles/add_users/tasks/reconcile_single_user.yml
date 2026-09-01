@@ -2,17 +2,17 @@
 - name: Create or update user {{ user.username }}
   community.general.keycloak_user:
     auth_keycloak_url: "https://{{ iam_ingress_hostname }}"
-    auth_realm: "{{ tenant.name }}"
+    auth_realm: "{{ tenancy.name }}"
     auth_username: "{{ iam_tenant_admin_username }}"
     auth_password: "{{ iam_tenant_admin_password }}"
-    realm: "{{ tenant.name }}"
+    realm: "{{ tenancy.name }}"
     username: "{{ user.username }}"
     email: "{{ user.email }}"
     firstName: "{{ user.first_name }}"
     lastName: "{{ user.last_name }}"
-    enabled: "{{ user.enabled | default(true) }}"
-    emailVerified: "{{ user.email_verified | default (true) }}"
-    state: present
+    enabled: "{{ user.enabled | tenancy.defaults.enabled }}"
+    emailVerified: "{{ user.email_verified | tenancy.defaults.email_verified }}"
+    state: "{{ user.state }}"
     validate_certs: true
   register: keycloak_user_result
 
@@ -22,7 +22,7 @@
       - keycloak_user_result.get('end_state',{}).get('id', '') != '' or keycloak_user_result.get('existing',{}).get('id','') != ''
     fail_msg: >
       Failed to retrieve Keycloak user ID for '{{ user.username }}'
-      in realm '{{ tenant.name }}'.
+      in realm '{{ tenancy.name }}'.
     success_msg: Successfully retrieved Keycloak user ID for '{{ user.username }}'
 
 - name: Record user reconciliation outcome
@@ -30,7 +30,7 @@
     reconciled_users: >-
       {{
         reconciled_users | default({}) | combine({
-          tenant.name ~ '/' ~ user.username: {
+          tenancy.name ~ '/' ~ user.username: {
             'user_id': keycloak_user_result.get('end_state',{}).get('id') if keycloak_user_result.get('end_state',{}).get('id','') != '' else keycloak_user_result.existing.id,
             'is_new_user': keycloak_user_result.get('end_state',{}).get('id', '') != '',
             'enabled': user.enabled | default(true),
