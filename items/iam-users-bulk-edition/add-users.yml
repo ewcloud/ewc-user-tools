@@ -1,7 +1,0 @@
-- name: Bulk-onboard users into an existing Keycloak Realms and with proper role assignments
-  hosts: localhost
-  connection: local
-  gather_facts: false
-
-  roles:
-    - role: add_users
