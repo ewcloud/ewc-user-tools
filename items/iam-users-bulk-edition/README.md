@@ -11,28 +11,52 @@ Subroutines to simplify bulk edition of EWC IAM users.
 schema_version: 1
 tenancy:
 
-  name: my-test-realm
+  # --- Tenancy Spec ---
+  name: my-ewc-tenancy
 
+  # --- User Spec ---
   users:
-    - username: john.smith
-      state: present
-      email: John.Smith@example.com
-      first_name: John
-      last_name: Smith
-      roles:
-        - name: ewc-iam-user
-        - name: ewc-jhub-training-f7983a-attendee
+    - email: John.Smith@example.com     # <- Adds or update user
 
+    - email: Ada.Wong@example.com       # <- Adds or update user,
+      enabled: false                    #    but disables login
+
+    - email: Carlos.Perez@example.com  # <- Removes user, if exists
+      state: absent
+      deletion_protection: false
+
+  # --- Defaults ---
+  # These apply to every user unless overridden per-user within users section above
   defaults:
-    deletion_protection: true 
+    deletion_protection: true
+    state: present
+    enabled: true
+    email_verified: true
     required_actions:
       - UPDATE_PASSWORD
-    roles_mode: merge
+    roles:
+      - name: ewc-iam-user
+      - name: ewc-app-user
+    roles_reconciliation_mode: merge
+
 ```
 
 
 ## Usage
 
+### Interactive Mode
+> ⚠️ When running in interactive mode, you will be prompts for your IAM username and password
 ```bash
 ansible-playbook iam-users-bulk-edition.yml
+```
+
+### Non-interactive Mode
+
+```bash
+ansible-playbook \
+  -e '{
+        "iam_tenant_admin_username": "<redacted>",
+        "iam_tenant_admin_password": "<redacted>"
+      }' \
+  iam-users-bulk-edition.yml
 ```

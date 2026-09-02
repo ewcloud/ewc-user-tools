@@ -17,7 +17,7 @@
       ansible.builtin.set_fact:
         has_loaded_tenancy_vars: "{{ tenancy is defined and tenancy.keys() | length > 0 }}"
 
-    - name: Include inputs vars (if not included already)
+    - name: Load inputs (if not included already)
       ansible.builtin.include_vars:
         file: ./vars/inputs.yml
         name: tenancy
@@ -35,3 +35,6 @@
       ansible.builtin.set_fact:
         tenancy: "{{ tenancy.tenancy }}"
 
+    - name: Edit users as per input specification
+      ansible.builtin.include_role:
+        name: edit_users

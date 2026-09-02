@@ -3,44 +3,29 @@ schema_version: 1
 tenancy:
 
   # --- Tenancy Spec ---
-  name: my-test-realm
+  name: my-ewc-tenancy
 
   # --- User Spec ---
   users:
-    - username: john.smith
-      state: present
-      email: John.Smith@example.com
-      first_name: John
-      last_name: Smith
-      enabled: true
-      roles:
-        - name: ewc-iam-user
-        - name: ewc-jhub-training-f7983a-attendee
+    - email: John.Smith@example.com     # <- Adds or update user
 
-    - username: jane.doe
-      state: present
-      email: Jane.Doe@example.com
-      roles:
-        - name: ewc-iam-user
-        - name: ewc-jhub-training-f7983a-attendee
-        - name: ewc-jhub-training-d3d5d9-attendee
+    - email: Ada.Wong@example.com       # <- Adds or update user,
+      enabled: false                    #    but disables login
 
-    - username: ada.jameson
-      email: Ada.Jameson@example.com
-      state: present
-      enabled: false
-
-    - username: carlos.perez
-      email: Carlos.Perez@example.com
+    - email: Carlos.Perez@example.com  # <- Removes user, if exists
       state: absent
       deletion_protection: false
 
   # --- Defaults ---
-  # NOTE: apply to every user unless overridden per-user within users section
+  # These apply to every user unless overridden per-user within users section above
   defaults:
-    deletion_protection: true # Safety switch; must be true for any `state: absent` to be enforced.
+    deletion_protection: true
+    state: present
     enabled: true
     email_verified: true
     required_actions:
       - UPDATE_PASSWORD
-    roles_mode: merge
+    roles:
+      - name: ewc-iam-user
+      - name: ewc-app-user
+    roles_reconciliation_mode: merge

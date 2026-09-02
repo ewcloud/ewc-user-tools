@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/ewcloud/ewc-user-tools/refs/heads/main/items/iam-users-bulk-edit/vars/inputs.schema.json",
   "title": "IAM User Bulk Edition Input Configuration Schema",
-  "$comment": "Auto-generated with https://openformatter.com/json-to-json-schema",
+  "$comment": "Attributes not part of this schema are ignored during input validation",
   "type": "object",
   "properties": {
     "schema_version": {
@@ -45,7 +45,7 @@
                   "properties": {
                     "name": {
                       "type": "string",
-                      "pattern": "ewc-jhub-training-[0-9a-z]{6}-attendee|ewc-iam-.*|ewc-app.*"
+                      "pattern": "ewc-jhub-training-[0-9a-z]{6}-attendee|ewc-iam-.*|ewc-app-.*"
                     }
                   },
                   "required": [
@@ -56,8 +56,6 @@
               }
             },
             "required": [
-              "username",
-              "state",
               "email"
             ]
           },
@@ -69,6 +67,10 @@
             "deletion_protection": {
               "type": "boolean"
             },
+            "state": {
+              "type": "string",
+              "enum": ["present", "absent"]
+            },
             "enabled": {
               "type": "boolean"
             },
@@ -79,20 +81,39 @@
               "type": "array",
               "items": {
                 "type": "string",
-                "enum": ["UPDATE_PASSWORD", "VERIFY_EMAIL", "UPDATE_PROFILE", "CONFIGURE_TOTP", "TERMS_AND_CONDITIONS"]
+                "enum": ["UPDATE_PASSWORD"]
               },
               "uniqueItems": true
             },
-            "roles_mode": {
+            "roles": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "pattern": "ewc-jhub-training-[0-9a-z]{6}-attendee|ewc-iam-.*|ewc-app.*"
+                  }
+                },
+                "required": [
+                  "name"
+                ]
+              },
+              "uniqueItems": true
+            },
+            "roles_reconciliation_mode": {
               "type": "string",
               "enum": ["merge", "replace"]
             }
           },
           "required": [
+            "deletion_protection",
+            "state",
             "enabled",
             "email_verified",
             "required_actions",
-            "roles_mode"
+            "roles",
+            "roles_reconciliation_mode"
           ]
         }
       },
