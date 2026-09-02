@@ -4,129 +4,189 @@
   "title": "IAM User Bulk Edition Input Configuration Schema",
   "$comment": "Attributes not part of this schema are ignored during input validation",
   "type": "object",
+  "required": [
+    "schema_version",
+    "tenancy"
+  ],
   "properties": {
     "schema_version": {
-      "type": "integer"
+      "type": "integer",
+      "minimum": 1,
+      "description": "Schema version of this configuration document"
     },
     "tenancy": {
+      "$ref": "#/$defs/Tenancy"
+    }
+  },
+  "$defs": {
+    "State": {
+      "type": "string",
+      "enum": [
+        "present",
+        "absent"
+      ]
+    },
+    "RequiredAction": {
+      "type": "string",
+      "enum": [
+        "VERIFY_EMAIL",
+        "UPDATE_PROFILE",
+        "CONFIGURE_TOTP",
+        "UPDATE_PASSWORD",
+        "TERMS_AND_CONDITIONS"
+      ]
+    },
+    "RoleName": {
+      "type": "string",
+      "pattern": "ewc-iam-.*|ewc-app-.*|ewc-jhub-.*",
+      "minLength": 0,
+      "description": "Allowed IAM role name patterns"
+    },
+    "Role": {
       "type": "object",
+      "required": [
+        "name"
+      ],
+      "additionalProperties": true,
       "properties": {
         "name": {
+          "$ref": "#/$defs/RoleName"
+        }
+      }
+    },
+    "Roles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Role"
+      },
+      "uniqueItems": true
+    },
+    "RequiredActions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/RequiredAction"
+      },
+      "uniqueItems": true
+    },
+    "RolesReconciliationMode": {
+      "type": "string",
+      "enum": [
+        "replace"
+      ]
+    },
+    "UserDefaults": {
+      "type": "object",
+      "required": [
+        "deletion_protection",
+        "state",
+        "enabled",
+        "email_verified",
+        "required_actions",
+        "roles",
+        "roles_reconciliation_mode",
+        "first_name",
+        "last_name"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "deletion_protection": {
+          "type": "boolean"
+        },
+        "state": {
+          "$ref": "#/$defs/State"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "email_verified": {
+          "type": "boolean"
+        },
+        "required_actions": {
+          "$ref": "#/$defs/RequiredActions"
+        },
+        "roles": {
+          "$ref": "#/$defs/Roles"
+        },
+        "roles_reconciliation_mode": {
+          "$ref": "#/$defs/RolesReconciliationMode"
+        },
+        "first_name": {
           "type": "string"
         },
-        "users": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "username": {
-                "type": "string"
-              },
-              "state": {
-                "type": "string",
-                "enum": ["present", "absent"]
-              },
-              "email": {
-                "type": "string",
-                "pattern": "^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-zA-Z]{2,}$"
-              },
-              "first_name": {
-                "type": "string"
-              },
-              "last_name": {
-                "type": "string"
-              },
-              "enabled": {
-                "type": "boolean"
-              },
-              "roles": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "name": {
-                      "type": "string",
-                      "pattern": "ewc-jhub-training-[0-9a-z]{6}-attendee|ewc-iam-.*|ewc-app-.*"
-                    }
-                  },
-                  "required": [
-                    "name"
-                  ]
-                },
-                "uniqueItems": true
-              }
-            },
-            "required": [
-              "email"
-            ]
-          },
-          "uniqueItems": true
-        },
-        "defaults": {
-          "type": "object",
-          "properties": {
-            "deletion_protection": {
-              "type": "boolean"
-            },
-            "state": {
-              "type": "string",
-              "enum": ["present", "absent"]
-            },
-            "enabled": {
-              "type": "boolean"
-            },
-            "email_verified": {
-              "type": "boolean"
-            },
-            "required_actions": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "enum": ["UPDATE_PASSWORD"]
-              },
-              "uniqueItems": true
-            },
-            "roles": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "pattern": "ewc-jhub-training-[0-9a-z]{6}-attendee|ewc-iam-.*|ewc-app.*"
-                  }
-                },
-                "required": [
-                  "name"
-                ]
-              },
-              "uniqueItems": true
-            },
-            "roles_reconciliation_mode": {
-              "type": "string",
-              "enum": ["merge", "replace"]
-            }
-          },
-          "required": [
-            "deletion_protection",
-            "state",
-            "enabled",
-            "email_verified",
-            "required_actions",
-            "roles",
-            "roles_reconciliation_mode"
-          ]
+        "last_name": {
+          "type": "string"
         }
-      },
+      }
+    },
+    "User": {
+      "type": "object",
+      "required": [
+        "email"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "username": {
+          "type": "string",
+          "minLength": 1
+        },
+        "state": {
+          "$ref": "#/$defs/State"
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "pattern": "^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-zA-Z]{2,}$"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "last_name": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "roles": {
+          "$ref": "#/$defs/Roles"
+        },
+        "deletion_protection": {
+          "type": "boolean"
+        },
+        "email_verified": {
+          "type": "boolean"
+        },
+        "required_actions": {
+          "$ref": "#/$defs/RequiredActions"
+        },
+        "roles_reconciliation_mode": {
+          "$ref": "#/$defs/RolesReconciliationMode"
+        }
+      }
+    },
+    "Tenancy": {
+      "type": "object",
       "required": [
         "name",
         "users",
         "defaults"
-      ]
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/User"
+          },
+          "uniqueItems": true
+        },
+        "defaults": {
+          "$ref": "#/$defs/UserDefaults"
+        }
+      }
     }
-  },
-  "required": [
-    "schema_version",
-    "tenancy"
-  ]
+  }
 }
