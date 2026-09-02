@@ -1,8 +1,10 @@
 # IAM Users Bulk Edition
 
-Subroutines to simplify bulk edition of EWC IAM users.
+Subroutine to simplify bulk edition of EWC IAM users.
 
 ## Functionality
+> ✅ Combinations of the actions listed below can be applied within a single run.
+
 
 * Adds new users
   * Emails new users with any required actions (verify email, update profile, etc.)
@@ -11,7 +13,7 @@ Subroutines to simplify bulk edition of EWC IAM users.
   * Attaches new or replaces existing IAM roles
 * Disables users
 * Deletes users
-* Combines all of the above actions in a single pass
+* (Optional) Runs interactively within JupyterLab and from input data in CSV format
 
 ## Prerequisites
 
@@ -20,10 +22,11 @@ Subroutines to simplify bulk edition of EWC IAM users.
 
 ## Usage
 
-### Run interactively via Jupyter Notebook
+### Run interactively (Jupyter Notebook)
 
+Start JupyterLab, copy the [example notebook](./notebooks/) and follow along to apply necessary IAM changes based on input data (CSV format).
 
-### Run programmatically via native tooling (Ansible)
+### Run programmatically
 
 #### 1. Setup working environment
 
@@ -35,7 +38,7 @@ Subroutines to simplify bulk edition of EWC IAM users.
 
 >💡 For complete information on required and optional input attributes, checkout the [templates/inputs.schema.json](./templates/inputs.schema.json) definition.
 
-An [example configuration](./vars/inputs.yml) covering most common supported cases is available. Customize freely to suit your needs:
+The included [input configuration](./vars/inputs.yml), in YAML format, exemplifies most common supported cases. Customize according to your needs:
 ```yaml
 # vars/inputs.yml
 ---
@@ -80,7 +83,7 @@ tenancy:
 ```
 
 
-#### 3. Trigger execution
+#### 3. Execute
 >⚠️ You will be prompted to enter IAM username and password. This is required to make IAM changes on your behalf.
 
 ```bash
