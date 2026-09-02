@@ -16,12 +16,12 @@ tenancy:
 
   # --- User Spec ---
   users:
-    - email: John.Smith@example.com     # <- Adds or update user
+    - email: john.smith@example.com     # <- Adds or update user
 
-    - email: Ada.Wong@example.com       # <- Adds or update user,
+    - email: ada.wong@example.com       # <- Adds or update user,
       enabled: false                    #    but disables login
 
-    - email: Carlos.Perez@example.com  # <- Removes user, if exists
+    - email: carlos.perez@example.com  # <- Removes user, if exists
       state: absent
       deletion_protection: false
 

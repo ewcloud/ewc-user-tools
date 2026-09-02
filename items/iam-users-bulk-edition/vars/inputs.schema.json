@@ -27,7 +27,8 @@
                 "enum": ["present", "absent"]
               },
               "email": {
-                "type": "string"
+                "type": "string",
+                "pattern": "^[a-z0-9._%+-]+@[a-z0-9.-]+\\.[a-zA-Z]{2,}$"
               },
               "first_name": {
                 "type": "string"
