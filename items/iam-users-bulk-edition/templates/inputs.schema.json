@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/ewcloud/ewc-user-tools/refs/heads/main/items/iam-users-bulk-edit/vars/inputs.schema.json",
+  "$id": "https://raw.githubusercontent.com/ewcloud/ewc-user-tools/refs/heads/main/items/iam-users-bulk-edit/templates/inputs.schema.json",
   "title": "IAM User Bulk Edition Input Configuration Schema",
   "$comment": "Attributes not part of this schema are ignored during input validation",
   "type": "object",

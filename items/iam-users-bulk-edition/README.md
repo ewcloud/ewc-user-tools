@@ -3,7 +3,7 @@
 Subroutines to simplify bulk edition of EWC IAM users.
 
 ## Inputs
-> 💡 For all available input options, checkout the [inputs.schema.json](./vars/inputs.schema.json) definition:
+> 💡 For all available input options, checkout the [templates/inputs.schema.json](./templates/inputs.schema.json) definition:
 
 ```yaml
 # vars/inputs.yml
