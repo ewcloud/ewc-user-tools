@@ -1,13 +1,12 @@
 # IAM Users Bulk Edition
 
-Subroutine to simplify bulk edition of EWC IAM users.
+Subroutines to simplify bulk edition of EWC IAM users.
 
 ## Functionality
-> ✅ Combinations of the actions listed below can be applied within a single run.
-
+> ✅ Combinations of all actions listed below can be applied within the same run.
 
 * Adds new users
-  * Emails new users with any required actions (verify email, update profile, etc.)
+  * Emails new users with 1st-login action requirements (update password, etc.)
 * Updates existing users
   * Updates first and/or last names 
   * Attaches new or replaces existing IAM roles
@@ -71,7 +70,7 @@ tenancy:
     state: present
     enabled: true
     email_verified: true
-    required_actions:
+    initial_login_actions:
       - UPDATE_PASSWORD
     roles:
       - name: ewc-iam-user

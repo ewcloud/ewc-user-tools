@@ -28,7 +28,7 @@ tenancy:
     state: present
     enabled: true
     email_verified: true
-    required_actions:
+    initial_login_actions:
       - UPDATE_PASSWORD
     roles:
       - name: ewc-iam-user

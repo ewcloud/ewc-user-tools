@@ -61,7 +61,7 @@
       },
       "uniqueItems": true
     },
-    "RequiredActions": {
+    "InitialLoginActions": {
       "type": "array",
       "items": {
         "$ref": "#/$defs/RequiredAction"
@@ -81,7 +81,7 @@
         "state",
         "enabled",
         "email_verified",
-        "required_actions",
+        "initial_login_actions",
         "roles",
         "roles_reconciliation_mode",
         "first_name",
@@ -101,8 +101,8 @@
         "email_verified": {
           "type": "boolean"
         },
-        "required_actions": {
-          "$ref": "#/$defs/RequiredActions"
+        "initial_login_actions": {
+          "$ref": "#/$defs/InitialLoginActions"
         },
         "roles": {
           "$ref": "#/$defs/Roles"
@@ -155,8 +155,8 @@
         "email_verified": {
           "type": "boolean"
         },
-        "required_actions": {
-          "$ref": "#/$defs/RequiredActions"
+        "initial_login_actions": {
+          "$ref": "#/$defs/InitialLoginActions"
         },
         "roles_reconciliation_mode": {
           "$ref": "#/$defs/RolesReconciliationMode"
