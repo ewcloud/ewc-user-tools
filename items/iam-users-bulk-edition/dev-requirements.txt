@@ -1,2 +1,2 @@
 requests==2.34.*
-ansible-lint==26.8.*
+ansible-lint==26.6.*

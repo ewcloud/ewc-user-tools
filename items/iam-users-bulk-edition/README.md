@@ -2,6 +2,18 @@
 
 Subroutines to simplify bulk edition of EWC IAM users.
 
+## Prerequisites
+
+* Take note of the username and password from tenancy admin (i.e. IAM user with the `ewc-iam-tenant-admin` role)
+* Verify Python version `>=3.10` is available on your working environment:
+  ```bash
+  python --version
+  ```
+* Install dependencies:
+  ```bash
+  pip install -r requirements.txt
+  ```
+
 ## Inputs
 > 💡 For all available input options, checkout the [templates/inputs.schema.json](./templates/inputs.schema.json) definition:
 
@@ -41,11 +53,10 @@ tenancy:
 
 ```
 
-
 ## Usage
 
 ### Interactive Mode
-> ⚠️ When running in interactive mode, you will be prompts for your IAM username and password
+> ⚠️ When running in interactive mode, you will be prompted for your IAM username and password
 ```bash
 ansible-playbook iam-users-bulk-edition.yml
 ```
