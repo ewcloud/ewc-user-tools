@@ -4,7 +4,7 @@ Subroutines to simplify bulk edition of EWC IAM users.
 
 ## Prerequisites
 
-* Take note of the username and password from tenancy admin (i.e. IAM user with the `ewc-iam-tenant-admin` role)
+* Get username and password from tenancy admin (i.e. IAM user with the `ewc-iam-tenant-admin` role)
 * Verify Python version `>=3.10` is available on your working environment:
   ```bash
   python --version
