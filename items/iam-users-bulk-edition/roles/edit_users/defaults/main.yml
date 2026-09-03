@@ -1,2 +1,3 @@
 ---
-iam_ingress_hostname: iam-val.europeanweather.cloud
+iam_ingress_hostname: iam.europeanweather.cloud
+iam_client_id: admin-cli

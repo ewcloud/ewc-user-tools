@@ -1,6 +1,6 @@
 # IAM Users Bulk Edition
 
-Subroutines to simplify bulk edition of EWC IAM users.
+Subroutines to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/spaces/EWCLOUDKB/pages/439585127/EWC+Identity+and+Access+Management+IAM+Service) users.
 
 ## Functionality
 > ✅ Combinations of all actions listed below can be applied within the same run.

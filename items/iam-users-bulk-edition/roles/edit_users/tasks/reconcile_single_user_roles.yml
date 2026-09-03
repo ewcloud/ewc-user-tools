@@ -10,6 +10,7 @@
       community.general.keycloak_user_rolemapping:
         auth_keycloak_url: "https://{{ iam_ingress_hostname }}"
         auth_realm: "{{ tenancy.name }}"
+        auth_client_id: "{{ iam_client_id }}"
         auth_username: "{{ iam_tenant_admin_username }}"
         auth_password: "{{ iam_tenant_admin_password }}"
         realm: "{{ tenancy.name }}"
