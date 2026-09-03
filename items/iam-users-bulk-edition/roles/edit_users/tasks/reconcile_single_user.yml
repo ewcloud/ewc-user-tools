@@ -16,12 +16,27 @@
     validate_certs: true
   register: keycloak_user_result
 
-- name: Detect deletion requests for non-existing user
+- name: Detect deletion attempt for non-existing user
   ansible.builtin.set_fact:
-    non_existing_user_deletion: "{{ keycloak_user_result.get('changed') == false and keycloak_user_result.get('msg').startswith('User does not exist') }}"
+    non_existing_user_deletion_attempt: "{{ keycloak_user_result.get('changed') == false and keycloak_user_result.get('msg').find('does not exist') > -1 }}"
 
-- name: Verify user edition and detect if user is new
-  when: not non_existing_user_deletion
+- name: Record non-existing user deletion attempt
+  ansible.builtin.set_fact:
+    reconciled_users: >-
+      {{
+        reconciled_users | default({}) | combine({
+          tenancy.name ~ '/' ~ user.email: {
+            'user_id': none,
+            'is_new_user': false,
+            'enabled': false,
+            'email': user.email
+          }
+        })
+      }}
+  when: non_existing_user_deletion_attempt
+
+- name: Record user edition and detect user addition
+  when: not non_existing_user_deletion_attempt
   block:
     - name: Assert user ID was returned for {{ user.email }}
       ansible.builtin.assert:

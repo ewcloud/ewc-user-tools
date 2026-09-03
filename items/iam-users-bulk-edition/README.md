@@ -64,7 +64,7 @@ tenancy:
       last_name: Mayer                  #    optional last name
 
   # --- Defaults ---
-  # These apply to every user unless overridden per-user within users section above
+  # These apply to every user unless overridden per-user above
   defaults:
     deletion_protection: true
     state: present
