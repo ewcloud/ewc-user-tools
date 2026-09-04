@@ -84,7 +84,7 @@ tenancy:
 
 
 #### 3. Execute
->⚠️ You will be prompted to enter EWC IAM username and password. This is required by the tooling to make changes on your behalf.
+>⚠️ You will be prompted to enter EWC IAM tenancy admin username and password. This is required by the tooling to make changes on your behalf.
 
 ```bash
 ansible-playbook iam-users-bulk-edition.yml

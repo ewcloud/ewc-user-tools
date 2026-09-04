@@ -6,7 +6,7 @@ Step-by-step guide to simplify bulk edition of [EWC IAM](https://confluence.ecmw
 
 > ✅ The only required column is `email`.
 
-> 💡 Default values for all optional  columns are configurable as Jupyter Notebook global parameters.
+> 💡 Default values for all optional columns are configurable as Jupyter Notebook global parameters.
 
 For simplicity, consider the input example of [users.csv](./users.csv):
 
@@ -25,8 +25,9 @@ Open [the Jupyter Notebook](./iam-users-bulk-edition.ipynb), start the runtime, 
 
 ## Workflow Stages
 
+
 1. **Global Parameters**: tenancy name, global default values, `CSV`  path
 2. **Dependencies Setup**: fetch dependencies, pin versions, and install
 3. **Input Data Loading and Cleaning**: validate and normalize the input `CSV`
-4. **Input Data Transformation**: generate and preview the equivalent `YAML` configuration changes to be applied on EWC IAM, based on input user `CSV` data
-5. **Apply Changes**: Apply the generated `YAML` configuration
+4. **Configuration Auto-generation**: generate and preview the equivalent `YAML` configuration changes to be applied on EWC IAM, based on input user `CSV` data
+5. **Apply Configuration Changes**: Apply the necessary EWC IAM changes as per the generate `YAML` configuration
