@@ -1,4 +1,16 @@
 ---
+- name: Detect deletion attempt of user with deletion protection enabled
+  ansible.builtin.set_fact:
+    protected_user_deletion_attempt: >-
+      {{
+        (user.deletion_protection | default(tenancy.defaults.deletion_protection)) == true and (user.state | default(tenancy.defaults.state)) == 'absent'
+      }}
+
+- name: Log deletion attempts for protected users, if any
+  ansible.builtin.debug:
+    msg: "Requested removal of user '{{ user.email }}' while deletion protection was enabled. Ignoring removal request..."
+  when: protected_user_deletion_attempt
+
 - name: Edit user {{ user.email }}
   community.general.keycloak_user:
     auth_keycloak_url: "https://{{ iam_ingress_hostname }}"
@@ -13,7 +25,7 @@
     lastName: "{{ user.last_name | default(tenancy.defaults.last_name) }}"
     enabled: "{{ user.enabled | default(tenancy.defaults.enabled) }}"
     emailVerified: "{{ user.email_verified | default(tenancy.defaults.email_verified) }}"
-    state: "{{ user.state | default(tenancy.defaults.state) }}"
+    state: "{{ (user.state | default(tenancy.defaults.state)) if not protected_user_deletion_attempt else 'present' }}"
     validate_certs: true
   register: keycloak_user_result
 
