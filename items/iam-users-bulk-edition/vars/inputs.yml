@@ -1,0 +1,39 @@
+---
+schema_version: 1
+tenancy:
+
+  # --- Tenancy Specification ---
+  name: my-ewc-tenancy
+
+  # --- User Specification ---
+  users:
+    - email: john.smith@example.com     # <- Adds/updates user with all defaults (email reused as username)
+
+    - email: ada.wong@example.com       # <- Adds/updates user with all defaults (email reused as username)
+      enabled: false                    #    and disables login
+
+    - email: carlos.perez@example.com   # <- Removes user, if exists
+      state: absent
+
+    - email: philipp.mayer@example.com  # <- Adds/updates user with 6 out of 10 defaults,
+      username: pmayer                  #    optional username,
+      first_name: Philipp               #    optional first name,
+      last_name: Mayer                  #    optional last name
+      roles:                            #    and optional role overrides
+        - name: ewc-jhub-lab-cfe2f3
+        - name: ewc-jhub-lab-f54924
+
+  # --- Defaults ---
+  # These apply to every user unless overridden per-user above
+  defaults:
+    deletion_protection: false
+    state: present
+    enabled: true
+    email_verified: true
+    initial_login_actions:
+      - UPDATE_PASSWORD
+    roles:
+      - name: ewc-jhub-lab-cfe2f3
+    roles_reconciliation_mode: replace
+    first_name: Unknown
+    last_name: Unknown

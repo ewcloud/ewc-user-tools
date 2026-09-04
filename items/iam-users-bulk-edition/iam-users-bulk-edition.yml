@@ -1,0 +1,40 @@
+- name: IAM Users bulk edition
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_prompt:
+    - name: iam_tenant_admin_username
+      prompt: IAM Tenant admin username
+      private: false
+
+    - name: iam_tenant_admin_password
+      prompt: IAM tenant admin password
+      private: true
+
+  tasks:
+    - name: Detect if input vars were already included
+      ansible.builtin.set_fact:
+        has_loaded_tenancy_vars: "{{ tenancy is defined and tenancy.keys() | length > 0 }}"
+
+    - name: Load inputs (if not included already)
+      ansible.builtin.include_vars:
+        file: ./vars/inputs.yml
+        name: tenancy
+      when: not has_loaded_tenancy_vars
+
+    - name: Validate included vars (if not validated already)
+      ansible.utils.validate:
+        data: "{{ tenancy }}"
+        criteria:
+          - "{{ lookup('file', './templates/inputs.schema.json') | from_json }}"
+        engine: ansible.utils.jsonschema
+      when: not has_loaded_tenancy_vars
+
+    - name: Extract attributes from key at the root of the schema
+      ansible.builtin.set_fact:
+        tenancy: "{{ tenancy.tenancy }}"
+
+    - name: Edit users as per input specification
+      ansible.builtin.include_role:
+        name: edit_users

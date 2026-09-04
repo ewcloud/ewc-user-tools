@@ -1,0 +1,2 @@
+ansible==10.7.*
+jsonschema==4.26.*
