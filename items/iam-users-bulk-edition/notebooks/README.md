@@ -4,6 +4,10 @@ Step-by-step guide to simplify bulk edition of [EWC IAM](https://confluence.ecmw
 
 ## Input
 
+> ✅ The only required column is `email`.
+
+> 💡 Default values for all optional  columns are configurable as Jupyter Notebook global parameters.
+
 For simplicity, consider the input example of [users.csv](./users.csv):
 
 
