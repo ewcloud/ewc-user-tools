@@ -23,7 +23,7 @@ Subroutines to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/s
 
 ### Run step-by-step via Jupyter Notebook
 
-Open the [iam-user-bulk-edition-via-jupyter.ipynb](https://github.com/ewcloud/ewc-user-tools/tree/main/items/iam-users-bulk-edition/notebooks) notebook, start the runtime, and execute cells top to bottom to apply access/permission changes.
+Open the [iam-user-bulk-edition-via-jupyter.ipynb](https://github.com/ewcloud/ewc-user-tools/tree/1.2.0/items/iam-users-bulk-edition/notebooks) notebook, start the runtime, and execute cells top to bottom to apply access/permission changes.
 
 ### Run programmatically
 
