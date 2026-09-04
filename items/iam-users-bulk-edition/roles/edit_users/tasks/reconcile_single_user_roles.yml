@@ -6,15 +6,44 @@
       ansible.builtin.set_fact:
         current_user_context: "{{ reconciled_users[tenancy.name ~ '/' ~ user.email] }}"
 
-    - name: Assign roles to user {{ user.email }}
-      community.general.keycloak_user_rolemapping:
-        auth_keycloak_url: "https://{{ iam_ingress_hostname }}"
-        auth_realm: "{{ tenancy.name }}"
-        auth_client_id: "{{ iam_client_id }}"
-        auth_username: "{{ iam_tenant_admin_username }}"
-        auth_password: "{{ iam_tenant_admin_password }}"
-        realm: "{{ tenancy.name }}"
-        uid: "{{ current_user_context.user_id }}"
-        roles: "{{ user.roles | default(tenancy.defaults.roles) }}"
-        state: present
+    - name: Fetch available realm roles for user {{ user.email }}
+      ansible.builtin.uri:
+        url: "https://{{ iam_ingress_hostname }}/admin/realms/{{ tenancy.name }}/users/{{ current_user_context.user_id }}/role-mappings/realm/available?first=0&max=101"
+        method: GET
+        headers:
+          Authorization: "Bearer {{ keycloak_api_token.json.access_token }}"
         validate_certs: true
+        status_code: 200
+      register: available_roles
+
+    - name: Determine desired role names for user {{ user.email }}
+      ansible.builtin.set_fact:
+        role_listing: >-
+          {{ (user.roles | default(tenancy.defaults.roles)) | map(attribute='name') | list }}
+
+    - name: Resolve desired roles against available realm roles
+      ansible.builtin.set_fact:
+        roles_to_assign: >-
+          {{ available_roles.json | selectattr('name', 'in', role_listing) | list }}
+
+    - name: Fail if some requested roles were not found/available
+      ansible.builtin.fail:
+        msg: >-
+          The following roles could not be found among available realm roles for
+          user {{ user.email }}:
+          {{ role_listing | difference(roles_to_assign | map(attribute='name') | list) }}
+      when:
+        - (roles_to_assign | length) < (role_listing | length)
+
+    - name: Assign roles to user {{ user.email }}
+      ansible.builtin.uri:
+        url: "https://{{ iam_ingress_hostname }}/admin/realms/{{ tenancy.name }}/users/{{ current_user_context.user_id }}/role-mappings/realm"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ keycloak_api_token.json.access_token }}"
+          Content-Type: "application/json"
+        body_format: json
+        body: "{{ roles_to_assign }}"
+        validate_certs: true
+        status_code: 204
+      when: roles_to_assign | length > 0
