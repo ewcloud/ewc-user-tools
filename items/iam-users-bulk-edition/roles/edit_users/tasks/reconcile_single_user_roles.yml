@@ -15,6 +15,7 @@
         validate_certs: true
         status_code: 200
       register: available_roles
+      no_log: true
 
     - name: Determine desired role names for user {{ user.email }}
       ansible.builtin.set_fact:
