@@ -8,7 +8,7 @@ Subroutines to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/s
 * Adds new users
   * Emails new users with 1st-login action requirements (update password, etc.)
 * Updates existing users
-  * Updates first and/or last names 
+  * Updates first and/or last names
   * Attaches new or replaces existing EWC IAM roles
 * Disables users
 * Deletes users
@@ -63,8 +63,8 @@ tenancy:
       last_name: Mayer                  #    optional last name
       roles:                            #    and optional roles to
         - name: ewc-iam-user            #    access their EWC IAM profile
-        - name: ewc-jhub-lab-cfe2f3     #    access EWC Jupyter Hub (lab session ID cfe2f3)  
-        - name: ewc-jhub-lab-f54924     #    access EWC Jupyter Hub (lab session ID f54924) 
+        - name: ewc-jhub-lab-cfe2f3     #    access EWC Jupyter Hub (lab session ID cfe2f3)
+        - name: ewc-jhub-lab-f54924     #    access EWC Jupyter Hub (lab session ID f54924)
 
   # --- Defaults ---
   # These apply to every user unless overridden per-user above
