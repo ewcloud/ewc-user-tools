@@ -96,8 +96,10 @@ ansible-playbook iam-users-bulk-edition.yml
 
 1. Prefer a single input file (`YAML` or `CSV`) per tenancy, to facilitate auditing tasks such as  ensuring a single config per user. Consider these edge-cases:
 
-  * A user is marked as absent in one input config, the change is applied, and the entry is removed altogether right after. Yet their email appears on a second input config and rentroduced accidentally with login enabled by default.
-  * A user requires access to multiple EWC Jupyter Hub environments, but necessary roles to are stated by different input configs, with the last one applied replacing the roles added by the former ones.
+    * A user is marked as absent in one input config, the change is applied, and the entry is removed altogether right after. Yet their email appears on a second input config and reintroduced accidentally with login enabled by default.
+    * A user requires access to multiple EWC Jupyter Hub environments, but necessary roles to are stated by different input configs, with the last one applied replacing the roles added by the former ones.
+
+    There is risk of data loss or security breaching WHEN ANY OF THE ABOVE becomes true; the recommendation above mitigates said risk.
 
 2. Keep the input config clean of users which are confirmed to have been marked as absent and for which said change was applied.
 
