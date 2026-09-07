@@ -24,6 +24,7 @@ Contact [EUMETSAT](http://www.eumetsat.int) for details on the usage and distrib
 
 | Name  | Summary  |
 |------|-----|
+| [iam-users-bulk-edition](./items/iam-users-bulk-edition/)    | Subroutines to simplify bulk edition of EWC IAM users. |
 | [openstack-backups](./items/openstack-backups/)    | Configure VM and volume backups, once or on a schedule. |
 | [openstack-parallel-migration](./items/openstack-parallel-migration/)    | OpenStack workload migration with resume support. |
 

@@ -1,0 +1,75 @@
+---
+- name: Detect deletion attempt of user with deletion protection enabled
+  ansible.builtin.set_fact:
+    protected_user_deletion_attempt: >-
+      {{
+        (user.deletion_protection | default(tenancy.defaults.deletion_protection)) == true and (user.state | default(tenancy.defaults.state)) == 'absent'
+      }}
+
+- name: Log deletion attempts for protected users, if any
+  ansible.builtin.debug:
+    msg: "Requested removal of user '{{ user.email }}' while deletion protection was enabled. Ignoring removal request..."
+  when: protected_user_deletion_attempt
+
+- name: Edit user {{ user.email }}
+  community.general.keycloak_user:
+    auth_keycloak_url: "https://{{ iam_ingress_hostname }}"
+    auth_realm: "{{ tenancy.name }}"
+    auth_client_id: "{{ iam_client_id }}"
+    auth_username: "{{ iam_tenant_admin_username }}"
+    auth_password: "{{ iam_tenant_admin_password }}"
+    realm: "{{ tenancy.name }}"
+    username: "{{ user.username | default(user.email) }}"
+    email: "{{ user.email }}"
+    firstName: "{{ user.first_name | default(tenancy.defaults.first_name) }}"
+    lastName: "{{ user.last_name | default(tenancy.defaults.last_name) }}"
+    enabled: "{{ user.enabled | default(tenancy.defaults.enabled) }}"
+    emailVerified: "{{ user.email_verified | default(tenancy.defaults.email_verified) }}"
+    state: "{{ (user.state | default(tenancy.defaults.state)) if not protected_user_deletion_attempt else 'present' }}"
+    validate_certs: true
+  register: keycloak_user_result
+
+- name: Detect deletion attempt for non-existing user
+  ansible.builtin.set_fact:
+    non_existing_user_deletion_attempt: "{{ keycloak_user_result.get('changed') == false and keycloak_user_result.get('msg').find('does not exist') > -1 }}"
+
+- name: Record non-existing user deletion attempt
+  ansible.builtin.set_fact:
+    reconciled_users: >-
+      {{
+        reconciled_users | default({}) | combine({
+          tenancy.name ~ '/' ~ user.email: {
+            'user_id': none,
+            'is_new_user': false,
+            'enabled': false,
+            'email': user.email
+          }
+        })
+      }}
+  when: non_existing_user_deletion_attempt
+
+- name: Record user edition and detect user addition
+  when: not non_existing_user_deletion_attempt
+  block:
+    - name: Assert user ID was returned for {{ user.email }}
+      ansible.builtin.assert:
+        that:
+          - keycloak_user_result.get('end_state',{}).get('id', '') != '' or keycloak_user_result.get('existing',{}).get('id','') != ''
+        fail_msg: >
+          Failed to retrieve Keycloak user ID for '{{ user.email }}'
+          in realm '{{ tenancy.name }}'.
+        success_msg: Successfully retrieved Keycloak user ID for '{{ user.email }}'
+
+    - name: Record user reconciliation outcome
+      ansible.builtin.set_fact:
+        reconciled_users: >-
+          {{
+            reconciled_users | default({}) | combine({
+              tenancy.name ~ '/' ~ user.email: {
+                'user_id': keycloak_user_result.get('end_state',{}).get('id') if keycloak_user_result.get('end_state',{}).get('id','') != '' else keycloak_user_result.existing.id,
+                'is_new_user': keycloak_user_result.get('end_state',{}).get('id', '') != '',
+                'enabled': user.enabled | default(tenancy.defaults.enabled),
+                'email': user.email
+              }
+            })
+          }}
