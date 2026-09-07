@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.2.0](https://github.com/ewcloud/ewc-user-tools/compare/1.1.0...1.2.0) (2026-09-07)
+
+
+### Features
+
+* IAM users bulk edition ([#9](https://github.com/ewcloud/ewc-user-tools/issues/9)) ([4d7ef9c](https://github.com/ewcloud/ewc-user-tools/commit/4d7ef9ccf233148edb2cf2db3312d9a1c2415c76))
+
 # [1.1.0](https://github.com/ewcloud/ewc-user-tools/compare/1.0.2...1.1.0) (2026-06-11)
 
 
