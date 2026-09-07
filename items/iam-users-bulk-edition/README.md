@@ -62,6 +62,7 @@ tenancy:
       first_name: Philipp               #    optional first name,
       last_name: Mayer                  #    optional last name
       roles:                            #    and optional role overrides
+        - name: ewc-iam-user
         - name: ewc-jhub-lab-cfe2f3
         - name: ewc-jhub-lab-f54924
 
@@ -75,6 +76,7 @@ tenancy:
     initial_login_actions:
       - UPDATE_PASSWORD
     roles:
+      - name: ewc-iam-user
       - name: ewc-jhub-lab-cfe2f3
     roles_reconciliation_mode: replace
     first_name: Unknown
@@ -90,6 +92,28 @@ tenancy:
 ansible-playbook iam-users-bulk-edition.yml
 ```
 
+## Development
+
+1. Fork this repository and change into the Item's subdirectory
+```bash
+git clone https://github.com/ewcloud/ewc-user-tools.git && cd ./ewc-user-tools/item/iam-users-bulk-edition
+```
+
+2. Install the development dependencies
+```bash
+pip install -r dev-requirements.yml
+```
+
+3. Modify the local code and test changes.
+
+4. Push code to your fork and open a pull request.
+
+## Code Styling
+Execute all linting tests by running:
+
+```bash
+ansible-lint --offline .
+```
 
 ## Resources
 
