@@ -57,14 +57,14 @@ tenancy:
     - email: carlos.perez@example.com   # <- Removes user, if exists
       state: absent
 
-    - email: philipp.mayer@example.com  # <- Adds/updates user with 6 out of 10 defaults,
+    - email: philipp.mayer@example.com  # <- Adds/updates user with overrides for
       username: pmayer                  #    optional username,
       first_name: Philipp               #    optional first name,
       last_name: Mayer                  #    optional last name
-      roles:                            #    and optional role overrides
-        - name: ewc-iam-user
-        - name: ewc-jhub-lab-cfe2f3
-        - name: ewc-jhub-lab-f54924
+      roles:                            #    and optional roles to
+        - name: ewc-iam-user            #    access their EWC IAM profile
+        - name: ewc-jhub-lab-cfe2f3     #    access EWC Jupyter Hub (lab session ID cfe2f3)  
+        - name: ewc-jhub-lab-f54924     #    access EWC Jupyter Hub (lab session ID f54924) 
 
   # --- Defaults ---
   # These apply to every user unless overridden per-user above
