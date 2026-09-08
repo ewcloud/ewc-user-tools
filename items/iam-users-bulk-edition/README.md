@@ -1,6 +1,6 @@
 # IAM Users Bulk Edition
 
-Subroutines to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/spaces/EWCLOUDKB/pages/439585127/EWC+Identity+and+Access+Management+IAM+Service) users.
+Subroutines to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/x/Z4kzGg) users.
 
 ## Functionality
 > ✅ Combinations of all features listed below are also supported.
@@ -23,9 +23,26 @@ Subroutines to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/s
 
 ### Run step-by-step via Jupyter Notebook
 
-Open the [iam-user-bulk-edition-via-jupyter.ipynb](https://github.com/ewcloud/ewc-user-tools/tree/1.2.0/items/iam-users-bulk-edition/notebooks) notebook, start the runtime, and execute cells top to bottom to apply access/permission changes.
+#### 1. Configure inputs
+> ✅ The only required column is `email`.
 
-### Run programmatically
+> 💡 Default values for all optional columns are configurable as Jupyter Notebook global parameters. Defaults can also be overwritten on each row.
+
+To get started, adapt the typical input example include in [users.csv](./notebooks/users.csv):
+
+
+email | state | enabled |username | first_name | last_name | roles | comment |
+------|-------|---------|---------|------------|-----------|-------|---------|
+"john.smith@example.com" | "present" | `true` | | | | | "Adds/updates user with most global defaults (email reused as username)." |
+"ada.wong@example.com" | "present" | `false` | | | | | "Adds/updates user with most global defaults but disables login (email reused as username)."  |
+"carlos.perez@example.com" | "absent" | | | | | | "Removes user, if exists." |
+"philipp.mayer@example.com" | "present" | `true` | "pmayer" | "Philipp"  | "Mayer" | "ewc-iam-user:ewc-jhub-atmosphere:ewc-jhub-marine" | "Adds/updates user with overrides for optional username, optional first name, optional last name and optional roles to access their EWC IAM profile and EWC Jupyter Hub marine and atmosphere environments (tree roles separated by colon)"  |
+
+#### 2. Run in an interactive session
+
+Open the [iam-user-bulk-edition-via-jupyter.ipynb](https://github.com/ewcloud/ewc-user-tools/tree/1.2.1/items/iam-users-bulk-edition/notebooks) notebook, start the runtime, and execute cells top to bottom to apply access/permission changes.
+
+### Run natively via Ansible Playbook
 
 #### 1. Setup working environment
 
@@ -63,8 +80,8 @@ tenancy:
       last_name: Mayer                  #    optional last name
       roles:                            #    and optional roles to
         - name: ewc-iam-user            #    access their EWC IAM profile
-        - name: ewc-jhub-lab-cfe2f3     #    access EWC Jupyter Hub (lab session ID cfe2f3)
-        - name: ewc-jhub-lab-f54924     #    access EWC Jupyter Hub (lab session ID f54924)
+        - name: ewc-jhub-marine         #    access EWC Jupyter Hub marine environment
+        - name: ewc-jhub-atmosphere     #    access EWC Jupyter Hub atmosphere environment
 
   # --- Defaults ---
   # These apply to every user unless overridden per-user above
@@ -77,7 +94,7 @@ tenancy:
       - UPDATE_PASSWORD
     roles:
       - name: ewc-iam-user
-      - name: ewc-jhub-lab-cfe2f3
+      - name: ewc-jhub-marine
     roles_reconciliation_mode: replace
     first_name: Unknown
     last_name: Unknown
@@ -85,7 +102,7 @@ tenancy:
 ```
 
 
-#### 3. Execute
+#### 3. Execute one-line command
 >⚠️ You will be prompted to enter EWC IAM tenancy admin username and password. This is required by the tooling to make changes on your behalf.
 
 ```bash
@@ -94,7 +111,7 @@ ansible-playbook iam-users-bulk-edition.yml
 
 ## Best Practices
 
-1. Prefer a single input file (`YAML` or `CSV`) per tenancy, to facilitate auditing tasks such as  ensuring a single config per user. Consider these edge-cases:
+1. Prefer a single input file per tenancy, to facilitate auditing tasks such as  ensuring a single config per user. Consider these edge-cases:
 
     * A user is marked as absent in one input config, the change is applied, and the entry is removed altogether right after. Yet their email appears on a second input config and reintroduced accidentally with login enabled by default.
     * A user requires access to multiple EWC Jupyter Hub environments, but necessary roles to are stated by different input configs, with the last one applied replacing the roles added by the former ones.
@@ -108,26 +125,23 @@ ansible-playbook iam-users-bulk-edition.yml
 ## Development
 
 1. Fork this repository and change into the Item's subdirectory
-```bash
-git clone https://github.com/ewcloud/ewc-user-tools.git && cd ./ewc-user-tools/item/iam-users-bulk-edition
-```
+    ```bash
+    git clone https://github.com/ewcloud/ewc-user-tools.git && cd ./ewc-user-tools/item/iam-users-bulk-edition
+    ```
 
 2. Install the development dependencies
-```bash
-pip install -r dev-requirements.yml
-```
+    ```bash
+    pip install -r dev-requirements.yml
+    ```
 
-3. Modify the local code and test changes.
+3. Modify the local code and test changes, including code styling tests
 
-4. Push code to your fork and open a pull request.
+    ```bash
+    ansible-lint --offline .
+    ```
 
-## Code Styling
-Execute all linting tests by running:
-
-```bash
-ansible-lint --offline .
-```
+4. Share your work by following the [contribution guidelines](../../CONTRIBUTING.md)
 
 ## Resources
 
-* [EWC Identity and Access Management (IAM) Service](https://confluence.ecmwf.int/spaces/EWCLOUDKB/pages/439585127/EWC+Identity+and+Access+Management+IAM+Service)
+* [EWC Identity and Access Management (IAM) Service](https://confluence.ecmwf.int/x/Z4kzGg)
