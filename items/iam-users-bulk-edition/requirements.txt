@@ -1,2 +1,4 @@
+ansible-compat==26.6.*
+ansible-core==2.17.*
 ansible==10.7.*
 jsonschema==4.26.*
