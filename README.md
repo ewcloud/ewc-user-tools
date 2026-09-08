@@ -32,7 +32,7 @@ Contact [EUMETSAT](http://www.eumetsat.int) for details on the usage and distrib
 
 | Component | Version | License | Home URL |
 |------|---------|---------|--------------|
-| python | 3.12.9 | PSF | https://www.python.org/ |
+| python | 3.10 (or above) | PSF | https://www.python.org/ |
 | ansible | 12.0.0 | GPL-3.0-or-later | https://pypi.org/project/ansible/ |
 | openstacksdk | 4.9.0 | Apache-2.0 | https://docs.openstack.org/openstacksdk/latest/ |
 | PyYAML | 6.0.3 | MIT | https://pyyaml.org/ |
