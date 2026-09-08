@@ -38,8 +38,8 @@ email | state | enabled |username | first_name | last_name | roles | comment |
 "carlos.perez@example.com" | "absent" | | | | | | "Removes user, if exists." |
 "philipp.mayer@example.com" | "present" | `true` | "pmayer" | "Philipp"  | "Mayer" | "ewc-iam-user:ewc-jhub-atmosphere:ewc-jhub-marine" | "Adds/updates user with overrides for optional username, optional first name, optional last name and optional roles to access their EWC IAM profile and EWC Jupyter Hub marine and atmosphere environments (tree roles separated by colon)"  |
 
-#### 2. Run in an interactive session  
-  
+#### 2. Run in an interactive session
+
 Open the [iam-user-bulk-edition-via-jupyter.ipynb](https://github.com/ewcloud/ewc-user-tools/tree/1.2.1/items/iam-users-bulk-edition/notebooks) notebook, start the runtime, and execute cells top to bottom to apply access/permission changes.
 
 ### Run natively via Ansible Playbook
