@@ -125,25 +125,22 @@ ansible-playbook iam-users-bulk-edition.yml
 ## Development
 
 1. Fork this repository and change into the Item's subdirectory
-```bash
-git clone https://github.com/ewcloud/ewc-user-tools.git && cd ./ewc-user-tools/item/iam-users-bulk-edition
-```
+    ```bash
+    git clone https://github.com/ewcloud/ewc-user-tools.git && cd ./ewc-user-tools/item/iam-users-bulk-edition
+    ```
 
 2. Install the development dependencies
-```bash
-pip install -r dev-requirements.yml
-```
+    ```bash
+    pip install -r dev-requirements.yml
+    ```
 
-3. Modify the local code and test changes.
+3. Modify the local code and test changes, including code styling tests
 
-4. Push code to your fork and open a pull request.
+    ```bash
+    ansible-lint --offline .
+    ```
 
-## Code Styling
-Execute all linting tests by running:
-
-```bash
-ansible-lint --offline .
-```
+4. Share your work by following the [contribution guidelines](../../CONTRIBUTING.md)
 
 ## Resources
 
