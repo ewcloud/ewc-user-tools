@@ -1,5 +1,5 @@
 # IAM Users Bulk Edition via Jupyter
-Step-by-step guide to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/spaces/EWCLOUDKB/pages/439585127/EWC+Identity+and+Access+Management+IAM+Service) users via interactive Jupyter Notebook environments.
+Step-by-step guide to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/x/Z4kzGg) users via interactive Jupyter Notebook environments.
 
 
 ## Input

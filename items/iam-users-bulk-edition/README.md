@@ -1,6 +1,6 @@
 # IAM Users Bulk Edition
 
-Subroutines to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/spaces/EWCLOUDKB/pages/439585127/EWC+Identity+and+Access+Management+IAM+Service) users.
+Subroutines to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/x/Z4kzGg) users.
 
 ## Functionality
 > ✅ Combinations of all features listed below are also supported.
@@ -130,4 +130,4 @@ ansible-lint --offline .
 
 ## Resources
 
-* [EWC Identity and Access Management (IAM) Service](https://confluence.ecmwf.int/spaces/EWCLOUDKB/pages/439585127/EWC+Identity+and+Access+Management+IAM+Service)
+* [EWC Identity and Access Management (IAM) Service](https://confluence.ecmwf.int/x/Z4kzGg)
