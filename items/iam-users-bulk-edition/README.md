@@ -23,6 +23,23 @@ Subroutines to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/x
 
 ### Run step-by-step via Jupyter Notebook
 
+#### 1. Configure inputs
+> ✅ The only required column is `email`.
+
+> 💡 Default values for all optional columns are configurable as Jupyter Notebook global parameters. Defaults can also be overwritten on each row.
+
+To get started, adapt the typical input example include in [users.csv](./notebooks/users.csv):
+
+
+email | state | enabled |username | first_name | last_name | roles | comment |
+------|-------|---------|---------|------------|-----------|-------|---------|
+"john.smith@example.com" | "present" | `true` | | | | | "Adds/updates user with most global defaults (email reused as username)." |
+"ada.wong@example.com" | "present" | `false` | | | | | "Adds/updates user with most global defaults but disables login (email reused as username)."  |
+"carlos.perez@example.com" | "absent" | | | | | | "Removes user, if exists." |
+"philipp.mayer@example.com" | "present" | `true` | "pmayer" | "Philipp"  | "Mayer" | "ewc-iam-user:ewc-jhub-lab-f54924:ewc-jhub-lab-cfe2f3" | "Adds/updates user with overrides for optional username, optional first name, optional last name and optional roles to access their EWC IAM profile and EWC Jupyter Hub lab sessions cfe2f3 and f54924 (tree roles separated by colon)"  |
+
+#### 2. Run in an interactive session  
+  
 Open the [iam-user-bulk-edition-via-jupyter.ipynb](https://github.com/ewcloud/ewc-user-tools/tree/1.2.1/items/iam-users-bulk-edition/notebooks) notebook, start the runtime, and execute cells top to bottom to apply access/permission changes.
 
 ### Run programmatically
@@ -85,7 +102,7 @@ tenancy:
 ```
 
 
-#### 3. Execute
+#### 3. Execute one-line command
 >⚠️ You will be prompted to enter EWC IAM tenancy admin username and password. This is required by the tooling to make changes on your behalf.
 
 ```bash
@@ -94,7 +111,7 @@ ansible-playbook iam-users-bulk-edition.yml
 
 ## Best Practices
 
-1. Prefer a single input file (`YAML` or `CSV`) per tenancy, to facilitate auditing tasks such as  ensuring a single config per user. Consider these edge-cases:
+1. Prefer a single input file per tenancy, to facilitate auditing tasks such as  ensuring a single config per user. Consider these edge-cases:
 
     * A user is marked as absent in one input config, the change is applied, and the entry is removed altogether right after. Yet their email appears on a second input config and reintroduced accidentally with login enabled by default.
     * A user requires access to multiple EWC Jupyter Hub environments, but necessary roles to are stated by different input configs, with the last one applied replacing the roles added by the former ones.
