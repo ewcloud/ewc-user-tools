@@ -42,7 +42,7 @@ email | state | enabled |username | first_name | last_name | roles | comment |
   
 Open the [iam-user-bulk-edition-via-jupyter.ipynb](https://github.com/ewcloud/ewc-user-tools/tree/1.2.1/items/iam-users-bulk-edition/notebooks) notebook, start the runtime, and execute cells top to bottom to apply access/permission changes.
 
-### Run programmatically
+### Run natively via Ansible Playbook
 
 #### 1. Setup working environment
 
