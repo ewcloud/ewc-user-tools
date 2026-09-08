@@ -36,7 +36,7 @@ email | state | enabled |username | first_name | last_name | roles | comment |
 "john.smith@example.com" | "present" | `true` | | | | | "Adds/updates user with most global defaults (email reused as username)." |
 "ada.wong@example.com" | "present" | `false` | | | | | "Adds/updates user with most global defaults but disables login (email reused as username)."  |
 "carlos.perez@example.com" | "absent" | | | | | | "Removes user, if exists." |
-"philipp.mayer@example.com" | "present" | `true` | "pmayer" | "Philipp"  | "Mayer" | "ewc-iam-user:ewc-jhub-lab-f54924:ewc-jhub-lab-cfe2f3" | "Adds/updates user with overrides for optional username, optional first name, optional last name and optional roles to access their EWC IAM profile and EWC Jupyter Hub lab sessions cfe2f3 and f54924 (tree roles separated by colon)"  |
+"philipp.mayer@example.com" | "present" | `true` | "pmayer" | "Philipp"  | "Mayer" | "ewc-iam-user:ewc-jhub-atmosphere:ewc-jhub-marine" | "Adds/updates user with overrides for optional username, optional first name, optional last name and optional roles to access their EWC IAM profile and EWC Jupyter Hub marine and atmosphere environments (tree roles separated by colon)"  |
 
 #### 2. Run in an interactive session  
   
@@ -80,8 +80,8 @@ tenancy:
       last_name: Mayer                  #    optional last name
       roles:                            #    and optional roles to
         - name: ewc-iam-user            #    access their EWC IAM profile
-        - name: ewc-jhub-lab-cfe2f3     #    access EWC Jupyter Hub (lab session ID cfe2f3)
-        - name: ewc-jhub-lab-f54924     #    access EWC Jupyter Hub (lab session ID f54924)
+        - name: ewc-jhub-marine         #    access EWC Jupyter Hub marine environment
+        - name: ewc-jhub-atmosphere     #    access EWC Jupyter Hub atmosphere environment
 
   # --- Defaults ---
   # These apply to every user unless overridden per-user above
@@ -94,7 +94,7 @@ tenancy:
       - UPDATE_PASSWORD
     roles:
       - name: ewc-iam-user
-      - name: ewc-jhub-lab-cfe2f3
+      - name: ewc-jhub-marine
     roles_reconciliation_mode: replace
     first_name: Unknown
     last_name: Unknown
