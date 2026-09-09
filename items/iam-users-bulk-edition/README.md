@@ -33,6 +33,10 @@ Open the [iam-user-bulk-edition-via-jupyter.ipynb](https://github.com/ewcloud/ew
   pip install -r requirements.txt
   ```
 
+  ```bash
+  ansible-galaxy collection install -r requirements.yml
+  ```
+
 #### 2. Configure inputs
 
 >💡 For complete information on required and optional input attributes, checkout the [templates/inputs.schema.json](./templates/inputs.schema.json) definition.

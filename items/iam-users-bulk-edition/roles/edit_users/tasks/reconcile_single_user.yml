@@ -12,7 +12,7 @@
   when: protected_user_deletion_attempt
 
 - name: Edit user {{ user.email }}
-  community.general.keycloak_user:
+  middleware_automation.keycloak.keycloak_user:
     auth_keycloak_url: "https://{{ iam_ingress_hostname }}"
     auth_realm: "{{ tenancy.name }}"
     auth_client_id: "{{ iam_client_id }}"

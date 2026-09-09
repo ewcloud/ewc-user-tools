@@ -1,0 +1,4 @@
+---
+collections:
+  - name: middleware_automation.keycloak
+    version: 3.0.11
