@@ -23,7 +23,7 @@ email | state | enabled |username | first_name | last_name | roles | comment |
 
 Open the [iam-user-bulk-edition-via-jupyter.ipynb](./iam-users-bulk-edition-via-jupyter.ipynb) notebook, start the runtime, and execute cells top to bottom to apply access/permission changes.
 
-## Workflow Stages
+### Workflow Stages
 
 1. **Global Parameters**: tenancy name, global default values, `CSV`  path
 2. **Dependencies Setup**: fetch dependencies, pin versions, and install
