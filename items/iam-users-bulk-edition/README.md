@@ -34,7 +34,7 @@ Open the [iam-user-bulk-edition-via-jupyter.ipynb](https://github.com/ewcloud/ew
   ```
 
   ```bash
-  ansible-galaxy collection install -r requirements.yml
+  ansible-galaxy collection install -r requirements.yml -p .ansible
   ```
 
 #### 2. Configure inputs
