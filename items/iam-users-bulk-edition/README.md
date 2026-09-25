@@ -28,7 +28,7 @@ Subroutines to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/x
 
 > 💡 Default values for all optional columns are configurable as Jupyter Notebook global parameters. Defaults can also be overwritten on each row.
 
-To get started, adapt the typical input example include in [users.csv](https://raw.githubusercontent.com/ewcloud/ewc-user-tools/refs/heads/1.2.1/items/iam-users-bulk-edition/notebooks/users.csv):
+To get started, adapt the typical input example include in [users.csv](https://raw.githubusercontent.com/ewcloud/ewc-user-tools/refs/tags/1.2.1/items/iam-users-bulk-edition/notebooks/users.csv):
 
 
 email | state | enabled |username | first_name | last_name | roles | comment |
