@@ -20,9 +20,9 @@ tenancy:
       first_name: Philipp               #    optional first name,
       last_name: Mayer                  #    optional last name
       roles:                            #    and optional roles to
-        - name: ewc-iam-user            #    edit EWC IAM profile info (first and lastname)
-        - name: ewc-jhub-marine         #    edit EWC Jupyter Hub marine environment
-        - name: ewc-jhub-atmosphere     #    edit EWC Jupyter Hub atmosphere environment
+        - name: ewc-iam-user            #    edit EWC IAM profile info (first and last name)
+        - name: ewc-jhub-marine         #    access EWC Jupyter Hub marine cluster
+        - name: ewc-jhub-atmosphere     #    access EWC Jupyter Hub atmosphere cluster
 
   # --- Defaults ---
   # These apply to every user unless overridden per-user above

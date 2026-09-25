@@ -14,9 +14,10 @@ To get started, adapt the typical input example include in [users.csv](./users.c
 email | state | enabled |username | first_name | last_name | roles | comment |
 ------|-------|---------|---------|------------|-----------|-------|---------|
 "john.smith@example.com" | "present" | `true` | | | | | "Adds/updates user with most global defaults (email reused as username)." |
+"philipp.mayer@example.com" | "present" | `true` | "pmayer" | "Philipp"  | "Mayer" | "ewc-jhub-atmosphere:ewc-jhub-marine" | "Adds/updates user with overrides for optional username, optional first name, optional last name and optional roles to access EWC Jupyter Hub marine and atmosphere clusters (two roles separated by colon)"  |
 "ada.wong@example.com" | "present" | `false` | | | | | "Adds/updates user with most global defaults but disables login (email reused as username)."  |
 "carlos.perez@example.com" | "absent" | | | | | | "Removes user, if exists." |
-"philipp.mayer@example.com" | "present" | `true` | "pmayer" | "Philipp"  | "Mayer" | "ewc-iam-user:ewc-jhub-atmosphere:ewc-jhub-marine" | "Adds/updates user with overrides for optional username, optional first name, optional last name and optional roles to edit EWC IAM profile info (first and lastname) and EWC Jupyter Hub marine and atmosphere environments (tree roles separated by colon)"  |
+
 
 
 ## Usage

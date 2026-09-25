@@ -36,7 +36,7 @@ email | state | enabled |username | first_name | last_name | roles | comment |
 "john.smith@example.com" | "present" | `true` | | | | | "Adds/updates user with most global defaults (email reused as username)." |
 "ada.wong@example.com" | "present" | `false` | | | | | "Adds/updates user with most global defaults but disables login (email reused as username)."  |
 "carlos.perez@example.com" | "absent" | | | | | | "Removes user, if exists." |
-"philipp.mayer@example.com" | "present" | `true` | "pmayer" | "Philipp"  | "Mayer" | "ewc-iam-user:ewc-jhub-atmosphere:ewc-jhub-marine" | "Adds/updates user with overrides for optional username, optional first name, optional last name and optional roles to edit EWC IAM profile info (first and lastname) and EWC Jupyter Hub marine and atmosphere environments (tree roles separated by colon)"  |
+"philipp.mayer@example.com" | "present" | `true` | "pmayer" | "Philipp"  | "Mayer" | "ewc-jhub-atmosphere:ewc-jhub-marine" | "Adds/updates user with overrides for optional username, optional first name, optional last name and optional roles to access EWC Jupyter Hub marine and atmosphere clusters (two roles separated by colon)"  |
 
 #### 2. Run in an interactive session
 
@@ -72,20 +72,19 @@ tenancy:
   users:
     - email: john.smith@example.com     # <- Adds/updates user with all defaults (email reused as username)
 
+    - email: philipp.mayer@example.com  # <- Adds/updates user with overrides for
+      username: pmayer                  #    optional username,
+      first_name: Philipp               #    optional first name,
+      last_name: Mayer                  #    optional last name
+      roles:                            #    optional roles to
+        - name: ewc-jhub-marine         #    access EWC Jupyter Hub marine cluster
+        - name: ewc-jhub-atmosphere     #    access EWC Jupyter Hub atmosphere cluster
+
     - email: ada.wong@example.com       # <- Adds/updates user with all defaults (email reused as username)
       enabled: false                    #    and disables login
 
     - email: carlos.perez@example.com   # <- Removes user, if exists
       state: absent
-
-    - email: philipp.mayer@example.com  # <- Adds/updates user with overrides for
-      username: pmayer                  #    optional username,
-      first_name: Philipp               #    optional first name,
-      last_name: Mayer                  #    optional last name
-      roles:                            #    and optional roles to
-        - name: ewc-iam-user            #    edit EWC IAM profile info (first and lastname)
-        - name: ewc-jhub-marine         #    edit EWC Jupyter Hub marine environment
-        - name: ewc-jhub-atmosphere     #    edit EWC Jupyter Hub atmosphere environment
 
   # --- Defaults ---
   # These apply to every user unless overridden per-user above
@@ -96,9 +95,9 @@ tenancy:
     email_verified: true
     initial_login_actions:
       - UPDATE_PASSWORD
-    roles:
-      - name: ewc-iam-user
-      - name: ewc-jhub-marine
+    roles:                               #    default roles to
+      - name: ewc-iam-user               #    edit EWC IAM profile info (first and last name)
+      - name: ewc-jhub-marine            #    access EWC Jupyter Hub marine cluster
     roles_reconciliation_mode: replace
     first_name: Unknown
     last_name: Unknown
