@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.2.1](https://github.com/ewcloud/ewc-user-tools/compare/1.2.0...1.2.1) (2026-09-25)
+
+
+### Bug Fixes
+
+* Ensure iam-users-bulk-edition runs on python 3.13 ([#10](https://github.com/ewcloud/ewc-user-tools/issues/10)) ([7b27350](https://github.com/ewcloud/ewc-user-tools/commit/7b27350472e015cde956112835aef5279fc523b1))
+
 # [1.2.0](https://github.com/ewcloud/ewc-user-tools/compare/1.1.0...1.2.0) (2026-09-07)
 
 
