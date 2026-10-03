@@ -1,0 +1,11 @@
+[project]
+name = "parallelmigration"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "openstacksdk>=4.17.0",
+    "pyyaml>=6.0.3",
+    "tqdm>=4.68.3",
+]
