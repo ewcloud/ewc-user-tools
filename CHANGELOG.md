@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/ewcloud/ewc-user-tools/compare/1.2.1...1.3.0) (2026-10-03)
+
+
+### Features
+
+* UV setup for openstack parallel migrate ([#7](https://github.com/ewcloud/ewc-user-tools/issues/7)) ([efec656](https://github.com/ewcloud/ewc-user-tools/commit/efec656e6c46cb741ad66e02d8b628a3b56eaf70))
+
 ## [1.2.1](https://github.com/ewcloud/ewc-user-tools/compare/1.2.0...1.2.1) (2026-09-25)
 
 
