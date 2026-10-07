@@ -66,7 +66,7 @@ schema_version: 1
 tenancy:
 
   # --- Tenancy Specification ---
-  name: my-ewc-tenancy
+  name: internal-eumetsat-usertraining
 
   # --- User Specification ---
   users:
@@ -96,7 +96,6 @@ tenancy:
     initial_login_actions:
       - UPDATE_PASSWORD
     roles:                               #    default roles to
-      - name: ewc-iam-user               #    edit EWC IAM profile info (first and last name)
       - name: ewc-jhub-marine            #    access EWC Jupyter Hub marine cluster
     roles_reconciliation_mode: replace
     first_name: Unknown
