@@ -1,0 +1,7 @@
+---
+- name: Reconcile users in realm {{ tenancy.name }}
+  ansible.builtin.include_tasks: reconcile_single_user.yml
+  loop: "{{ tenancy.users }}"
+  loop_control:
+    loop_var: user
+    label: "{{ user.email }}"
