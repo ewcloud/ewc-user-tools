@@ -3,6 +3,27 @@
 All notable changes to this project are documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.3.0](https://github.com/ewcloud/ewc-user-tools/compare/1.2.1...1.3.0) (2026-10-03)
+
+
+### Features
+
+* UV setup for openstack parallel migrate ([#7](https://github.com/ewcloud/ewc-user-tools/issues/7)) ([efec656](https://github.com/ewcloud/ewc-user-tools/commit/efec656e6c46cb741ad66e02d8b628a3b56eaf70))
+
+## [1.2.1](https://github.com/ewcloud/ewc-user-tools/compare/1.2.0...1.2.1) (2026-09-25)
+
+
+### Bug Fixes
+
+* Ensure iam-users-bulk-edition runs on python 3.13 ([#10](https://github.com/ewcloud/ewc-user-tools/issues/10)) ([7b27350](https://github.com/ewcloud/ewc-user-tools/commit/7b27350472e015cde956112835aef5279fc523b1))
+
+# [1.2.0](https://github.com/ewcloud/ewc-user-tools/compare/1.1.0...1.2.0) (2026-09-07)
+
+
+### Features
+
+* IAM users bulk edition ([#9](https://github.com/ewcloud/ewc-user-tools/issues/9)) ([4d7ef9c](https://github.com/ewcloud/ewc-user-tools/commit/4d7ef9ccf233148edb2cf2db3312d9a1c2415c76))
+
 # [1.1.0](https://github.com/ewcloud/ewc-user-tools/compare/1.0.2...1.1.0) (2026-06-11)
 
 
