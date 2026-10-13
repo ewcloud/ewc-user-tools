@@ -1,12 +1,14 @@
 # List of servers to copy over
-servers: 
-  - <server>
+servers:
+  - jupyterhub
+    #  - repromsg.osisaf.ewc
+
 
 # Flavor mapping file to translate source flavors to appropriate ones within the target cloud.
 flavor_map_file: flavor-map.yml
 
 # Number of parallel migrations
-parallel_streams: 2
+parallel_streams: 1
 
 # Whether to attach data volumes on the VMs created within the target cloud
 attach_data_volumes: true
@@ -18,7 +20,14 @@ create_target_server: true
 source_cloud: source
 
 # Target cloud name (should match one of the sub-attributes for clouds.yaml)
-target_cloud: target_oidc
+target_cloud: target
 
 # (Optional) Custom prefix to add on all VMs created within the target cloud
-target_server_name_prefix: 
+target_server_name_prefix:
+
+# (Optional) Name of sfs network on target cloud
+target_sfs_network_name:
+
+# (Optional) Range of private IPs for SFS network
+target_sfs_network_ip_range:
+
