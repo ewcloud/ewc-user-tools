@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.4.0](https://github.com/ewcloud/ewc-user-tools/compare/1.3.0...1.4.0) (2026-10-15)
+
+
+### Features
+
+* User-defined SFS network names ([#20](https://github.com/ewcloud/ewc-user-tools/issues/20)) ([8a4282e](https://github.com/ewcloud/ewc-user-tools/commit/8a4282e938a84375f5378f7965b4f4684355269c))
+
 # [1.3.0](https://github.com/ewcloud/ewc-user-tools/compare/1.2.1...1.3.0) (2026-10-03)
 
 
