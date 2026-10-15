@@ -23,24 +23,9 @@ Subroutines to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/x
 
 ### Run step-by-step via Jupyter Notebook
 
-#### 1. Configure inputs
-> ✅ The only required column is `email`.
+Open the [iam-user-bulk-edition-via-jupyter.ipynb](./notebooks/iam-users-bulk-edition-via-jupyter.ipynb) notebook, start the runtime, and execute cells top to bottom to apply access/permission changes.
 
-> 💡 Default values for all optional columns are configurable as Jupyter Notebook global parameters. Defaults can also be overwritten on each row.
-
-To get started, adapt the typical input example include in [users.csv](https://raw.githubusercontent.com/ewcloud/ewc-user-tools/refs/heads/internal-eumetsat-usertraining/items/iam-users-bulk-edition/notebooks/users.csv):
-
-
-email | state | enabled |username | first_name | last_name | roles | comment |
-------|-------|---------|---------|------------|-----------|-------|---------|
-"john.smith@example.com" | "present" | `true` | | | | | "Adds/updates user with most global defaults (email reused as username)." |
-"philipp.mayer@example.com" | "present" | `true` | "pmayer" | "Philipp"  | "Mayer" | "ewc-jhub-atmosphere:ewc-jhub-marine" | "Adds/updates user with overrides for optional username, optional first name, optional last name and optional roles to access EWC Jupyter Hub marine and atmosphere clusters (two roles separated by colon)"  |
-"ada.wong@example.com" | "present" | `false` | | | | | "Adds/updates user with most global defaults but disables login (email reused as username)."  |
-"carlos.perez@example.com" | "absent" | | | | | | "Removes user, if exists." |
-
-#### 2. Run in an interactive session
-
-Open the [iam-user-bulk-edition-via-jupyter.ipynb](https://github.com/ewcloud/ewc-user-tools/tree/internal-eumetsat-usertraining/items/iam-users-bulk-edition/notebooks) notebook, start the runtime, and execute cells top to bottom to apply access/permission changes.
+**OR**
 
 ### Run natively via Ansible Playbook
 
