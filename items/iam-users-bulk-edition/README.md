@@ -77,8 +77,8 @@ tenancy:
       first_name: Philipp               #    optional first name,
       last_name: Mayer                  #    optional last name
       roles:                            #    optional roles to
-        - name: ewc-jhub-marine         #    access EWC Jupyter Hub marine cluster
-        - name: ewc-jhub-atmosphere     #    access EWC Jupyter Hub atmosphere cluster
+        - name: ewc-iam-tenant-admin    #    create/delete/modify other users, assign roles to users
+        - name: ewc-app-admin           #    administer, deploy and create/modify resources to any integrated Apps
 
     - email: ada.wong@example.com       # <- Adds/updates user with all defaults (email reused as username)
       enabled: false                    #    and disables login
@@ -96,8 +96,8 @@ tenancy:
     initial_login_actions:
       - UPDATE_PASSWORD
     roles:                               #    default roles to
-      - name: ewc-iam-user               #    edit EWC IAM profile info (first and last name)
-      - name: ewc-jhub-marine            #    access EWC Jupyter Hub marine cluster
+      - name: ewc-iam-user               #    login to the IAM self-service and change their basic profile
+      - name: ewc-app-user               #    login to any integrated App
     roles_reconciliation_mode: replace
     first_name: Unknown
     last_name: Unknown
