@@ -734,6 +734,7 @@ def build_sg_rule_payload(rule, target_sg_id: str, remote_group_id: str | None =
 def ensure_security_groups(source, target, server) -> list[str]:
     src_srv = source.compute.get_server(server.id)
     attached_sg_names = [sg["name"] for sg in getattr(src_srv, "security_groups", [])]
+    attached_sg_names = list(set(attached_sg_names))
     if not attached_sg_names:
         return []
 
