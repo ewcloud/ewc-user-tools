@@ -819,7 +819,7 @@ def source_fixed_ip_plan(server) -> list[dict]:
     return plan
 
 
-def ensure_target_ports(target, server, sg_names: list[str], state: dict) -> list[str]:
+def ensure_target_ports(target, server, sg_names: list[str], sfs_network_name: str, state: dict) -> list[str]:
     existing_port_ids = []
     for port_id in list(state.get("ports", []) or []):
         try:
@@ -854,7 +854,11 @@ def ensure_target_ports(target, server, sg_names: list[str], state: dict) -> lis
 
             tgt_net = target.network.find_network(network_name, ignore_missing=True)
             if not tgt_net:
-                raise RuntimeError(f"{server.name}: target network '{network_name}' not found")
+                # If it is an sfs network, chances are it has a different name, so use the custom one
+                if network_name.startswith("sfs") and sfs_network_name is not None:
+                    tgt_net = target.network.find_network(sfs_network_name, ignore_missing=True)
+                if not tgt_net:
+                    raise RuntimeError(f"{server.name}: target network '{network_name}' not found")
 
             desired_name = stable_name("migrated-port", server.name, network_name, fixed_ip)
             reused = False
@@ -869,13 +873,22 @@ def ensure_target_ports(target, server, sg_names: list[str], state: dict) -> lis
             if reused:
                 continue
 
-            port = target.network.create_port(
-                name=desired_name,
-                network_id=tgt_net.id,
-                fixed_ips=[{"ip_address": fixed_ip}],
-                security_group_ids=sg_ids,
-            )
-            created.append(port.id)
+            # IPs in the SFS network cannot be reproduced in the new cloud, so pick another IP
+            if network_name.startswith("sfs"):
+                port = target.network.create_port(
+                        name=desired_name,
+                        network_id=tgt_net.id,
+                        security_group_ids=sg_ids,
+                )
+                created.append(port.id)
+            else:
+                port = target.network.create_port(
+                    name=desired_name,
+                    network_id=tgt_net.id,
+                    fixed_ips=[{"ip_address": fixed_ip}],
+                    security_group_ids=sg_ids,
+                )
+                created.append(port.id)
 
         state["ports"] = created
         return created
@@ -1735,7 +1748,8 @@ def migrate_one_server_worker(source_cloud: str, target_cloud: str, server_name:
 
         set_stage(server_name, state, "creating target security groups and fixed ports")
         sg_names = ensure_security_groups(source, target, src_server)
-        port_ids = ensure_target_ports(target, src_server, sg_names, state)
+        sfs_network_name = cfg["target_sfs_network_name"]
+        port_ids = ensure_target_ports(target, src_server, sg_names, sfs_network_name, state)
         save_state(server_name, state)
         overall.update(1)
 

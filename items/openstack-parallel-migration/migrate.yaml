@@ -22,3 +22,6 @@ target_cloud: target_oidc
 
 # (Optional) Custom prefix to add on all VMs created within the target cloud
 target_server_name_prefix: 
+
+# (Optional) Name of sfs network on target cloud
+target_sfs_network_name:
