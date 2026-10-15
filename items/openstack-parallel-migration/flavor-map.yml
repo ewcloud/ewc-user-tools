@@ -17,7 +17,7 @@ hmd.large: 4cpu-32gbmem
 eo2.2xlarge: 8cpu-32gbmem
 hm.large: 4cpu-32gbmem
 hmw.large: 4cpu-32gbmem
-eo2a.3xlarge: 64cpu-64gbmem
+eo2a.3xlarge: 16cpu-64gbmem
 hmd.xlarge: 8cpu-64gbmem
 eo2.3xlarge: 16cpu-64gbmem
 hm.xlarge: 8cpu-64gbmem
