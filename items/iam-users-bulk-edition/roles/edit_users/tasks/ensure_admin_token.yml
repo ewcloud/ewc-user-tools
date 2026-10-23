@@ -1,0 +1,54 @@
+---
+- name: Detect whether the cached admin access token needs a refresh
+  ansible.builtin.set_fact:
+    edit_users_token_refresh_needed: >-
+      {{
+        edit_users_token_expires_at is not defined
+        or now().timestamp() >= (edit_users_token_expires_at | float) - edit_users_token_refresh_margin_seconds
+      }}
+
+- name: Request and cache admin access token
+  when: edit_users_token_refresh_needed | bool
+  block:
+    - name: Record admin access token request time
+      ansible.builtin.set_fact:
+        edit_users_token_requested_at: "{{ now().timestamp() }}"
+
+    - name: Request admin access token for realm {{ tenancy.name }}
+      ansible.builtin.uri:
+        url: "https://{{ iam_ingress_hostname }}/realms/{{ tenancy.name }}/protocol/openid-connect/token"
+        method: POST
+        body_format: form-urlencoded
+        body:
+          grant_type: password
+          client_id: "{{ iam_client_id }}"
+          username: "{{ iam_tenant_admin_username }}"
+          password: "{{ iam_tenant_admin_password }}"
+        validate_certs: true
+        use_netrc: false
+      check_mode: false
+      no_log: true
+      failed_when: false
+      changed_when: false
+      register: edit_users_token_response
+
+    - name: Assert admin access token was issued for realm {{ tenancy.name }}
+      ansible.builtin.assert:
+        that:
+          - edit_users_token_response.status == 200
+          - edit_users_token_response.json.access_token is defined
+        fail_msg: >-
+          Failed to obtain an admin access token for realm '{{ tenancy.name }}'
+          ({{ [
+            'HTTP status ' ~ (edit_users_token_response.status | default('')),
+            (edit_users_token_response.json | default({})).error | default(''),
+            (edit_users_token_response.json | default({})).error_description | default(''),
+            edit_users_token_response.msg | default('') if (edit_users_token_response.status | default(-1)) == -1 else ''
+          ] | select | join('; ') }}).
+        success_msg: Obtained admin access token for realm '{{ tenancy.name }}'
+
+    - name: Cache admin access token
+      ansible.builtin.set_fact:
+        edit_users_access_token: "{{ edit_users_token_response.json.access_token }}"
+        edit_users_token_expires_at: "{{ (edit_users_token_requested_at | float) + (edit_users_token_response.json.expires_in | int) }}"
+      no_log: true

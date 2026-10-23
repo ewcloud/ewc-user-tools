@@ -1,9 +1,18 @@
 ---
+- name: Validation inputs
+  ansible.builtin.include_tasks: validate_input_specification.yml
+
 - name: Reconcile users
   ansible.builtin.include_tasks: reconcile_multiple_users.yml
 
 - name: Reconcile roles for users
   ansible.builtin.include_tasks: reconcile_multiple_users_roles.yml
 
+- name: Log skipped credential resets and emails (check mode)
+  ansible.builtin.debug:
+    msg: "Credential resets and emails are skipped"
+  when: ansible_check_mode
+
 - name: Process credential reset and email notifications
   ansible.builtin.include_tasks: process_multiple_users_credentials.yml
+  when: not ansible_check_mode
