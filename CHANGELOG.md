@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file. See
 [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.5.0](https://github.com/ewcloud/ewc-user-tools/compare/1.4.0...1.5.0) (2026-10-23)
+
+
+### Features
+
+* Select between merge or replace role reconciliation modes ([#22](https://github.com/ewcloud/ewc-user-tools/issues/22)) ([772d1d4](https://github.com/ewcloud/ewc-user-tools/commit/772d1d49ababd2d8a51d126eb519587cb7fa100d))
+
 # [1.4.0](https://github.com/ewcloud/ewc-user-tools/compare/1.3.0...1.4.0) (2026-10-15)
 
 
