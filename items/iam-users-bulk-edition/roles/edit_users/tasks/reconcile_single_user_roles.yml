@@ -1,19 +1,118 @@
 ---
-- name: Resolve user context and assign roles
+- name: Resolve user context and reconcile roles
   when: (user.state | default(tenancy.defaults.state)) == 'present'
   block:
     - name: Resolve reconciled user context for user {{ user.email }}
       ansible.builtin.set_fact:
         current_user_context: "{{ reconciled_users[tenancy.name ~ '/' ~ user.email] }}"
 
-    - name: Assign roles to user {{ user.email }}
-      middleware_automation.keycloak.keycloak_user_rolemapping:
-        auth_keycloak_url: "https://{{ iam_ingress_hostname }}"
-        auth_realm: "{{ tenancy.name }}"
-        auth_client_id: "{{ iam_client_id }}"
-        auth_username: "{{ iam_tenant_admin_username }}"
-        auth_password: "{{ iam_tenant_admin_password }}"
-        realm: "{{ tenancy.name }}"
-        uid: "{{ current_user_context.user_id }}"
-        roles: "{{ user.roles | default(tenancy.defaults.roles) }}"
-        state: present
+    - name: Log skipped role planning for users part of creation plan {{ user.email }}
+      ansible.builtin.debug:
+        msg: "{{ user.email }} would be created; roles not planned (check mode)"
+      when: current_user_context.user_id is none
+
+    - name: Plan and apply role changes
+      when: current_user_context.user_id is not none
+      block:
+        - name: Ensure admin access token
+          ansible.builtin.include_tasks: ensure_admin_token.yml
+
+        - name: Read direct realm role mappings of user {{ user.email }}
+          ansible.builtin.uri:
+            url: "https://{{ iam_ingress_hostname }}/admin/realms/{{ tenancy.name }}/users/{{ current_user_context.user_id }}/role-mappings/realm"
+            method: GET
+            headers:
+              Authorization: "Bearer {{ edit_users_access_token }}"
+            validate_certs: true
+            use_netrc: false
+          check_mode: false
+          no_log: true
+          failed_when: false
+          changed_when: false
+          register: edit_users_direct_mappings_response
+
+        - name: Assert direct realm role mappings were read for user {{ user.email }}
+          ansible.builtin.assert:
+            that:
+              - edit_users_direct_mappings_response.status == 200
+            fail_msg: >-
+              Failed to read direct realm role mappings of '{{ user.email }}' in realm '{{ tenancy.name }}'
+              ({{ [
+                'HTTP status ' ~ (edit_users_direct_mappings_response.status | default('')),
+                (edit_users_direct_mappings_response.json | default({})).errorMessage | default(''),
+                (edit_users_direct_mappings_response.json | default({})).error | default(''),
+                edit_users_direct_mappings_response.msg | default('') if (edit_users_direct_mappings_response.status | default(-1)) == -1 else ''
+              ] | select | join('; ') }}).
+            success_msg: Read direct realm role mappings of '{{ user.email }}'
+
+        - name: Resolve declared and direct roles of user {{ user.email }}
+          ansible.builtin.set_fact:
+            edit_users_mode: "{{ user.roles_reconciliation_mode | default(tenancy.defaults.roles_reconciliation_mode) }}"
+            edit_users_declared: "{{ user.roles | default(tenancy.defaults.roles) | map(attribute='name') | unique | sort }}"
+            edit_users_direct: "{{ edit_users_direct_mappings_response.json | map(attribute='name') | sort }}"
+
+        - name: Plan role changes for user {{ user.email }}
+          ansible.builtin.set_fact:
+            edit_users_to_add: "{{ edit_users_declared | difference(edit_users_direct) | sort }}"
+            edit_users_to_remove: >-
+              {{
+                edit_users_direct | select('match', edit_users_managed_roles_pattern) | difference(edit_users_declared) | sort
+                if edit_users_mode == 'replace' else []
+              }}
+
+        - name: Log role reconciliation plan for user {{ user.email }}
+          ansible.builtin.debug:
+            msg: >-
+              {{
+                ('[check]' if ansible_check_mode else '') ~ '[' ~ edit_users_mode ~ '] ' ~ user.email
+                ~ '  declared=[' ~ edit_users_declared | join(', ') ~ ']'
+                ~ '  direct-managed=[' ~ edit_users_direct | select('match', edit_users_managed_roles_pattern) | join(', ') ~ ']'
+                ~ '  add=[' ~ edit_users_to_add | join(', ') ~ ']'
+                ~ '  remove=[' ~ edit_users_to_remove | join(', ') ~ ']'
+                ~ (('  WARNING: no declared roles; all managed roles will be removed' if edit_users_mode == 'replace'
+                    else '  no declared roles; nothing to do') if edit_users_declared | length == 0 else '')
+              }}
+
+        - name: Add missing declared roles to user {{ user.email }}
+          middleware_automation.keycloak.keycloak_user_rolemapping:
+            auth_keycloak_url: "https://{{ iam_ingress_hostname }}"
+            auth_realm: "{{ tenancy.name }}"
+            auth_client_id: "{{ iam_client_id }}"
+            auth_username: "{{ iam_tenant_admin_username }}"
+            auth_password: "{{ iam_tenant_admin_password }}"
+            token: "{{ edit_users_access_token }}"
+            realm: "{{ tenancy.name }}"
+            validate_certs: true
+            uid: "{{ current_user_context.user_id }}"
+            state: present
+            roles: "{{ edit_users_to_add | map('community.general.dict_kv', 'name') | list }}"
+          when: edit_users_to_add | length > 0
+
+        - name: Remove undeclared managed roles from user {{ user.email }}
+          middleware_automation.keycloak.keycloak_user_rolemapping:
+            auth_keycloak_url: "https://{{ iam_ingress_hostname }}"
+            auth_realm: "{{ tenancy.name }}"
+            auth_client_id: "{{ iam_client_id }}"
+            auth_username: "{{ iam_tenant_admin_username }}"
+            auth_password: "{{ iam_tenant_admin_password }}"
+            token: "{{ edit_users_access_token }}"
+            realm: "{{ tenancy.name }}"
+            validate_certs: true
+            uid: "{{ current_user_context.user_id }}"
+            state: absent
+            roles: "{{ edit_users_to_remove | map('community.general.dict_kv', 'name') | list }}"
+          when: edit_users_to_remove | length > 0
+
+        - name: Record role reconciliation report for user {{ user.email }}
+          ansible.builtin.set_fact:
+            edit_users_roles_report: >-
+              {{
+                edit_users_roles_report | default({}) | combine({
+                  tenancy.name ~ '/' ~ user.email: {
+                    'mode': edit_users_mode,
+                    'to_add': edit_users_to_add,
+                    'to_remove': edit_users_to_remove,
+                    'applied': not ansible_check_mode
+                  }
+                })
+              }}
