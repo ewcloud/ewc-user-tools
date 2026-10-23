@@ -25,7 +25,7 @@ Open the `iam-user-bulk-edition-via-jupyter.ipynb` notebook, start the runtime, 
 >   OR
 > * Override the global parameters on a per-row basis, by setting a value on the corresponding optional cell
 
-An input example with standard operations is include in [users.csv](https://raw.githubusercontent.com/ewcloud/ewc-user-tools/refs/tags/1.4.0/items/iam-users-bulk-edition/notebooks/users.csv). Adapt as needed:
+An input example with standard operations is include in [users.csv](https://raw.githubusercontent.com/ewcloud/ewc-user-tools/refs/tags/1.5.0/items/iam-users-bulk-edition/notebooks/users.csv). Adapt as needed:
 
 
 email | state | enabled |username | first_name | last_name | roles | comment |
