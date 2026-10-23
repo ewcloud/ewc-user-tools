@@ -38,9 +38,8 @@
     },
     "RoleName": {
       "type": "string",
-      "pattern": "ewc-iam-.*|ewc-app-.*|ewc-jhub-.*",
-      "minLength": 0,
-      "description": "Allowed IAM role name patterns"
+      "pattern": "^(ewc-iam-|ewc-app-|ewc-jhub-).*$",
+      "description": "Allowed IAM role name patterns. NOTE: Must align with roles/edit_users/defaults/main.yml"
     },
     "Role": {
       "type": "object",
@@ -70,8 +69,10 @@
     },
     "RolesReconciliationMode": {
       "type": "string",
+      "description": "NOTE: Must align with roles/edit_users/defaults/main.yml",
       "enum": [
-        "replace"
+        "replace",
+        "merge"
       ]
     },
     "UserDefaults": {

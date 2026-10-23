@@ -1,0 +1,140 @@
+---
+- name: Ensure input spec complines with the schema
+  ansible.utils.validate:
+    data: "{{ tenancy }}"
+    criteria:
+      - "{{ lookup('file', '../../../templates/inputs.schema.json') | from_json }}"
+    engine: ansible.utils.jsonschema
+
+- name: Extract attributes from key at the root of the schema
+  ansible.builtin.set_fact:
+    tenancy: "{{ tenancy.tenancy }}"
+
+- name: Detect duplicate users in tenancy.users
+  ansible.builtin.set_fact:
+    edit_users_duplicate_emails: >-
+      {{
+        tenancy.users | map(attribute='email') | map('lower')
+        | community.general.counter | dict2items | selectattr('value', 'gt', 1) | map(attribute='key') | sort
+      }}
+    edit_users_duplicate_usernames: >-
+      {{
+        (tenancy.users | selectattr('username', 'defined') | map(attribute='username') | list
+         + tenancy.users | rejectattr('username', 'defined') | map(attribute='email') | list)
+        | map('lower') | community.general.counter | dict2items | selectattr('value', 'gt', 1) | map(attribute='key') | sort
+      }}
+
+- name: Assert every entry in tenancy.users refers to a different user
+  ansible.builtin.assert:
+    that:
+      - edit_users_duplicate_emails | length == 0
+      - edit_users_duplicate_usernames | length == 0
+    fail_msg: >-
+      Duplicate users in tenancy.users: {{
+        ([('email ' ~ edit_users_duplicate_emails | join(', ')) if edit_users_duplicate_emails else '']
+         + [('username ' ~ edit_users_duplicate_usernames | join(', ')) if edit_users_duplicate_usernames else ''])
+        | select | join('; ')
+      }}
+    success_msg: No duplicate users in tenancy.users
+
+- name: Collect users whose effective state is present
+  ansible.builtin.set_fact:
+    edit_users_present_users: >-
+      {{
+        tenancy.users | selectattr('state', 'defined') | selectattr('state', 'equalto', 'present') | list
+        + (tenancy.users | selectattr('state', 'undefined') | list if tenancy.defaults.state == 'present' else [])
+      }}
+
+- name: Collect role reconciliation modes and role declarations of present users
+  ansible.builtin.set_fact:
+    edit_users_invalid_mode_users: >-
+      {{
+        edit_users_present_users | selectattr('roles_reconciliation_mode', 'defined')
+        | rejectattr('roles_reconciliation_mode', 'in', edit_users_reconciliation_modes) | list
+      }}
+    # Role name -> entries declaring it: 'tenancy.defaults.roles' and/or the emails of present users
+    edit_users_role_declarers: >-
+      {%- set ns = namespace(declarers={}) -%}
+      {%- for name in tenancy.defaults.roles | default([], true) | map(attribute='name', default='') | map('string') -%}
+      {%- set ns.declarers = ns.declarers | combine({name: ['tenancy.defaults.roles']}, list_merge='append_rp') -%}
+      {%- endfor -%}
+      {%- for present_user in edit_users_present_users if present_user.roles is defined -%}
+      {%- for name in present_user.roles | default([], true) | map(attribute='name', default='') | map('string') -%}
+      {%- set ns.declarers = ns.declarers | combine({name: [present_user.email]}, list_merge='append_rp') -%}
+      {%- endfor -%}
+      {%- endfor -%}
+      {{ ns.declarers }}
+
+- name: Assert role reconciliation modes are valid
+  ansible.builtin.assert:
+    that:
+      - (tenancy.defaults.roles_reconciliation_mode | default('')) in edit_users_reconciliation_modes
+      - edit_users_invalid_mode_users | length == 0
+    fail_msg: >-
+      {%- set ns = namespace(offenders=[]) -%}
+      {%- if (tenancy.defaults.roles_reconciliation_mode | default('')) not in edit_users_reconciliation_modes -%}
+      {%- set ns.offenders = ns.offenders + ["tenancy.defaults '" ~ (tenancy.defaults.roles_reconciliation_mode | default('')) ~ "'"] -%}
+      {%- endif -%}
+      {%- for invalid_user in edit_users_invalid_mode_users -%}
+      {%- set ns.offenders = ns.offenders + [invalid_user.email ~ " '" ~ invalid_user.roles_reconciliation_mode ~ "'"] -%}
+      {%- endfor -%}
+      Invalid roles_reconciliation_mode, expected one of {{ edit_users_reconciliation_modes | join(', ') }}:
+      {{ ns.offenders | join('; ') }}
+    success_msg: Role reconciliation modes are valid
+
+- name: Assert declared role names are in the managed namespace
+  ansible.builtin.assert:
+    that:
+      - edit_users_role_declarers | reject('match', edit_users_managed_roles_pattern) | list | length == 0
+    fail_msg: >-
+      Role names outside the managed namespace {{ edit_users_managed_roles_pattern }}:
+      {% for name in edit_users_role_declarers | reject('match', edit_users_managed_roles_pattern) | sort -%}
+      `{{ name }}` declared by {{ edit_users_role_declarers[name] | join(', ') }}{{ '; ' if not loop.last else '' }}{% endfor %}
+    success_msg: Declared role names are in the managed namespace
+
+- name: Collect role names declared for present users
+  ansible.builtin.set_fact:
+    edit_users_declared_role_names: >-
+      {{
+        (edit_users_present_users | selectattr('roles', 'defined') | map(attribute='roles') | flatten
+         + (tenancy.defaults.roles if (edit_users_present_users | rejectattr('roles', 'defined') | list | length > 0) else []))
+        | map(attribute='name') | unique | sort
+      }}
+
+- name: Ensure admin access token
+  ansible.builtin.include_tasks: ensure_admin_token.yml
+
+- name: Resolve declared roles and check reconciliation feasibility
+  when: edit_users_declared_role_names | length > 0
+  block:
+    - name: Check declared roles exist and are assignable by the authenticated admin
+      middleware_automation.keycloak.keycloak_user_rolemapping:
+        auth_keycloak_url: "https://{{ iam_ingress_hostname }}"
+        auth_realm: "{{ tenancy.name }}"
+        auth_client_id: "{{ iam_client_id }}"
+        auth_username: "{{ iam_tenant_admin_username }}"
+        auth_password: "{{ iam_tenant_admin_password }}"
+        token: "{{ edit_users_access_token }}"
+        realm: "{{ tenancy.name }}"
+        validate_certs: true
+        target_username: "{{ iam_tenant_admin_username | lower }}"
+        state: present
+        roles: "{{ edit_users_declared_role_names | map('community.general.dict_kv', 'name') | list }}"
+      check_mode: true
+      changed_when: false
+      ignore_errors: true
+      register: edit_users_role_check
+
+    - name: Assert declared roles exist and are assignable by the authenticated admin
+      ansible.builtin.assert:
+        that:
+          - edit_users_role_check is not failed
+        fail_msg: >-
+          {%- set module_msg = edit_users_role_check.msg | default('') -%}
+          {%- if module_msg is match('^Could not fetch role (.+?) for client_id') -%}
+          {%- set name = module_msg | regex_replace('^Could not fetch role ', '') | regex_replace(' for client_id.*$', '') -%}
+          Role `{{ name }}` is unknown, or not assignable by the authenticated admin.
+          Declared by: {{ edit_users_role_declarers[name] | default([]) | join(', ') }}.{% elif module_msg is match('^Could not fetch user for username') -%}
+          Could not find the authenticated admin's account. Make sure to enter your IAM username when prompted, not your email.{% else -%}
+          {{ module_msg }}{% endif %}
+        success_msg: Declared roles exist and are assignable by the authenticated admin

@@ -9,7 +9,7 @@ Subroutines to simplify bulk edition of [EWC IAM](https://confluence.ecmwf.int/x
   * Emails new users with 1st-login action requirements (update password, etc.)
 * Updates existing users
   * Updates first and/or last names
-  * Attaches new or replaces existing EWC IAM roles
+  * Adds missing EWC IAM roles (`merge`), and optionally removes undeclared ones (`replace`)
 * Disables users
 * Deletes users
 * (Optional) Runs step-by-step via Jupyter Notebook, on an arbitrary amount of tabular user data in `CSV` format

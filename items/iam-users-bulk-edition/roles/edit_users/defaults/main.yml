@@ -1,3 +1,6 @@
 ---
 iam_ingress_hostname: iam-val.europeanweather.cloud
 iam_client_id: admin-cli
+edit_users_managed_roles_pattern: '^(ewc-iam-|ewc-app-|ewc-jhub-).*$' # NOTE: Must align with $defs.RoleName.pattern in inputs.schema.json
+edit_users_reconciliation_modes: [replace, merge] # NOTE: Must align with $defs.RolesReconciliationMode.enum in inputs.schema.json
+edit_users_token_refresh_margin_seconds: 30

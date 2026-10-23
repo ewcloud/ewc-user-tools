@@ -5,3 +5,7 @@
   loop_control:
     loop_var: user
     label: "{{ user.email }}"
+
+- name: Summarize role reconciliation for users in realm {{ tenancy.name }}
+  ansible.builtin.debug:
+    msg: "{{ edit_users_roles_report | default({}) }}"
