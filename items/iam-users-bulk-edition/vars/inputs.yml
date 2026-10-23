@@ -3,7 +3,7 @@ schema_version: 1
 tenancy:
 
   # --- Tenancy Specification ---
-  name: my-ewc-tenancy
+  name: internal-eumetsat-usertraining
 
   # --- User Specification ---
   users:
